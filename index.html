@@ -1,0 +1,1795 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Tableau Learning Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: full-width workbook. A frozen band on top holds the title, the Product and Mode containers
+   and the theme toggle; its second line names the chosen product. Light = grey with navy text, dark = navy with white text; titles in dark orange.
+   Pills keep Tableau's meaning: blue = discrete, green = continuous / done. */
+:root{
+  --bg:#ECEEF2; --surface:#FFFFFF; --sunk:#E2E6EC; --ink:#0D1F45; --muted:#46557A; --line:#CDD3DE;
+  --band:#DDE2EA; --band-ink:#0D1F45; --band-soft:#3A4A70; --band-line:#C3CAD7;
+  --title:#C2530A;
+  --dim:#2459B8; --dim-bg:#DFE8F8; --mea:#22794A; --mea-bg:#DCEFE3; --accent:#C2530A; --accent-bg:#FBE7D7; --warn:#A93A2A; --warn-bg:#F7E0DB;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+  --r:8px;
+  --gut-l:max(16px, 3vw, env(safe-area-inset-left, 0px));
+  --gut-r:max(16px, 3vw, env(safe-area-inset-right, 0px));
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0A1730; --surface:#10213F; --sunk:#172B4F; --ink:#FFFFFF; --muted:#B9C5DC; --line:#24395F;
+  --band:#071226; --band-ink:#FFFFFF; --band-soft:#C3CDE2; --band-line:#22365A;
+  --title:#FF8A1F;
+  --dim:#7FB0FF; --dim-bg:#1A3260; --mea:#6FD39A; --mea-bg:#163D33; --accent:#FF8A1F; --accent-bg:#3A2410; --warn:#FF9A85; --warn-bg:#40201C; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0A1730; --surface:#10213F; --sunk:#172B4F; --ink:#FFFFFF; --muted:#B9C5DC; --line:#24395F;
+  --band:#071226; --band-ink:#FFFFFF; --band-soft:#C3CDE2; --band-line:#22365A;
+  --title:#FF8A1F;
+  --dim:#7FB0FF; --dim-bg:#1A3260; --mea:#6FD39A; --mea-bg:#163D33; --accent:#FF8A1F; --accent-bg:#3A2410; --warn:#FF9A85; --warn-bg:#40201C; color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  padding-left:max(16px, 3vw, env(safe-area-inset-left, 0px));padding-right:max(16px, 3vw, env(safe-area-inset-right, 0px));}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--band)}
+.wrap{width:100%;margin:0;padding-block:0 32px;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--sunk);padding:1px 5px;border-radius:4px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+
+/* frozen masthead */
+.masthead{position:sticky;top:env(safe-area-inset-top, 0px);z-index:6;background:var(--band);color:var(--band-ink);
+  margin-left:calc(-1 * var(--gut-l));margin-right:calc(-1 * var(--gut-r));padding-left:var(--gut-l);padding-right:var(--gut-r);
+  border-bottom:1px solid var(--band-line);box-shadow:0 6px 14px -12px rgba(0,0,0,.45)}
+.mh-row{display:flex;align-items:center;gap:14px 18px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{width:32px;height:32px;flex:none}
+.brand h1{font-size:21px;font-weight:800;letter-spacing:-.01em;white-space:nowrap}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:auto}
+.ctl{display:flex;align-items:center;gap:8px;border-radius:10px;padding:4px 5px 4px 10px;background:var(--surface);color:var(--ink)}
+.ctl-product{border:2px solid var(--dim)}
+.ctl-mode{border:2px solid var(--mea)}
+.ctl-label{font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:5px}
+.ctl-label svg{width:12px;height:12px}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.spill{border:1.5px solid var(--dim);color:var(--dim);background:transparent;border-radius:999px;padding:3px 12px;font-weight:700;font-size:13px}
+.spill.on{background:var(--dim);color:var(--surface)}
+.spill.m{border-color:var(--mea);color:var(--mea)} .spill.m.on{background:var(--mea);color:var(--surface)}
+.iconbtn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--band-ink);background:transparent;color:var(--band-ink);display:grid;place-items:center;flex:none}
+.iconbtn svg{width:18px;height:18px}
+.iconbtn:hover{background:var(--surface);color:var(--ink)}
+.mh-sub{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;padding-block:7px 9px;border-top:1px solid var(--band-line)}
+.mh-sub h2{font-size:19px;font-weight:800}
+.mh-sub p{margin:0;color:var(--band-soft);font-size:14px;flex:1;min-width:240px}
+.mh-sub .stats{font-family:var(--f-mono);font-size:12px;color:var(--band-soft);white-space:nowrap}
+.mh-sub .eyebrow{color:var(--band-soft)}
+
+/* global search */
+@media (min-width: 1240px){ .controls{flex-wrap:nowrap} .ctl{flex:none} .seg{flex-wrap:nowrap} .spill{white-space:nowrap} }
+.hsearch{position:relative;flex:0 1 340px;min-width:220px}
+.hsearch-box{display:flex;align-items:center;gap:8px;background:var(--surface);color:var(--ink);border:2px solid var(--title);border-radius:10px;padding:0 6px 0 10px;height:40px}
+.hsearch-box:focus-within{box-shadow:0 0 0 3px var(--accent-bg)}
+.hsearch-box svg{width:16px;height:16px;flex:none;color:var(--muted)}
+.hsearch-box input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:15px;color:var(--ink);outline:none;height:100%}
+.hsearch-box input::placeholder{color:var(--muted)}
+.hsearch-box input::-webkit-search-cancel-button{display:none}
+.kbd{font-family:var(--f-mono);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 6px;flex:none}
+.sclear{border:0;background:none;color:var(--muted);font-size:18px;line-height:1;padding:2px 6px;border-radius:4px}
+.sclear:hover{background:var(--sunk);color:var(--ink)}
+.sres{position:absolute;left:0;width:max(100%, min(560px, calc(100vw - 32px)));top:calc(100% + 6px);z-index:30;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;box-shadow:0 18px 40px -16px rgba(0,0,0,.45);max-height:min(70vh,560px);overflow:auto;padding:6px}
+.sres-head{display:flex;justify-content:space-between;gap:8px;padding:6px 8px 8px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);margin-bottom:4px}
+.sres-head b{color:var(--ink)}
+.sgroup{font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:10px 8px 4px}
+.shit{display:flex;flex-direction:column;gap:3px;width:100%;text-align:left;border:0;background:none;border-radius:8px;padding:8px 10px;border-left:3px solid transparent}
+.shit:hover,.shit.active{background:var(--sunk);border-left-color:var(--title)}
+.shit .st{font-weight:700;color:var(--title);font-size:15px}
+.shit .sm{font-size:12px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.shit .sm .pchip{font-weight:700;border-radius:4px;padding:0 6px;background:var(--dim-bg);color:var(--dim)}
+.shit .ss{font-size:13px;color:var(--muted);line-height:1.45}
+.sempty{padding:14px 10px;font-size:14px;color:var(--muted)}
+.ssugg{display:flex;flex-wrap:wrap;gap:6px;padding:4px 8px 10px}
+.ssugg button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:3px 12px;font-size:13px;color:var(--ink)}
+.ssugg button:hover{border-color:var(--title);color:var(--title)}
+mark{background:var(--accent-bg);color:inherit;border-radius:3px;padding:0 1px}
+mark.hit{outline:2px solid var(--title);outline-offset:0}
+.shit mark{background:transparent;color:var(--title);text-decoration:underline;text-underline-offset:2px;padding:0}
+
+/* titles and important names */
+.brand h1,.mh-sub h2,.lesson-head h2,.dayhead h2,.body h3,.quiz h3,.sectionlbl h3,.card h3,.lab-h h3,.cc-out h4,.mod > summary,.acc > summary,.titem.cur{color:var(--title)}
+
+/* general layout */
+.general{display:grid;grid-template-columns:clamp(260px,22vw,340px) minmax(0,1fr);gap:18px;align-items:start}
+.pane{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);position:sticky;top:calc(var(--mh, 120px) + 12px);max-height:calc(100vh - var(--mh, 120px) - 24px);display:flex;flex-direction:column;overflow:hidden}
+.pane-head{padding:12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.pane-head label{font-size:12px;color:var(--muted)}
+.search{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:7px 10px;font:inherit;font-size:14px;color:var(--ink)}
+.toc{overflow:auto;padding:6px 0 12px}
+.mod > summary{list-style:none;cursor:pointer;padding:8px 12px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+.mod > summary::-webkit-details-marker{display:none}
+.mod > summary .caret{transition:transform .15s;color:var(--muted);font-size:10px}
+.mod[open] > summary .caret{transform:rotate(90deg)}
+.mod > summary .cnt{margin-left:auto;font-family:var(--f-mono);font-size:11px;color:var(--muted);font-weight:400}
+.titem{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left;border:0;background:none;padding:5px 12px 5px 30px;font-size:14px;color:var(--ink);border-left:3px solid transparent}
+.titem:hover{background:var(--sunk)}
+.titem.cur{background:var(--dim-bg);border-left-color:var(--dim);font-weight:700}
+.titem .num{font-family:var(--f-mono);font-size:11px;color:var(--muted);width:30px;flex:none}
+.titem .ok{margin-left:auto;color:var(--mea);font-weight:700;flex:none}
+.lesson,.daymain,.dayshelf{scroll-margin-top:calc(var(--mh, 120px) + 12px)}
+.toc-empty{padding:12px;color:var(--muted);font-size:14px}
+.pane-toggle{display:none}
+
+/* lesson */
+.lesson{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,3vw,36px);min-width:0;display:flex;flex-direction:column;gap:18px}
+.lesson-head{display:flex;flex-direction:column;gap:10px}
+.lesson-head h2{font-size:clamp(24px,3.2vw,34px);font-weight:800;letter-spacing:-.015em}
+.meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tag{font-size:12px;font-weight:700;border-radius:4px;padding:2px 8px;background:var(--sunk);color:var(--muted)}
+.tag.Basic{background:var(--dim-bg);color:var(--dim)} .tag.Intermediate{background:var(--accent-bg);color:var(--accent)} .tag.Advanced{background:var(--warn-bg);color:var(--warn)}
+.learn-btn{margin-left:auto;border:1.5px solid var(--mea);color:var(--mea);background:transparent;border-radius:999px;padding:5px 14px;font-weight:700;font-size:14px}
+.learn-btn.on{background:var(--mea);color:var(--surface)}
+.lead{font-size:19px;line-height:1.5;margin:0}
+.body{display:flex;flex-direction:column;gap:14px}
+.body p{margin:0}
+.body h3{font-size:18px;margin-top:6px}
+.body ul,.body ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.body ol li::marker{font-family:var(--f-mono);color:var(--dim);font-weight:600}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;background:var(--sunk);font-weight:700;padding:8px 10px;white-space:nowrap;font-size:13px}
+td{padding:8px 10px;border-top:1px solid var(--line);vertical-align:top}
+td:first-child{font-weight:700}
+.note{border-radius:6px;padding:12px 14px;display:flex;gap:10px;font-size:15px}
+.note b.lbl{font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;flex:none;padding-top:3px}
+.note.tip{background:var(--mea-bg)} .note.tip b.lbl{color:var(--mea)}
+.note.warn{background:var(--warn-bg)} .note.warn b.lbl{color:var(--warn)}
+.note.try{background:var(--accent-bg)} .note.try b.lbl{color:var(--accent)}
+pre{margin:0;background:var(--sunk);border-radius:6px;padding:14px;overflow-x:auto;font-family:var(--f-mono);font-size:13px;line-height:1.6}
+.pill{display:inline-block;font-family:var(--f-body);font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 9px;color:var(--surface);white-space:nowrap;margin:1px 0}
+.pill.d{background:var(--dim)} .pill.m{background:var(--mea)}
+
+/* quiz */
+.quiz{border-top:1px dashed var(--line);padding-top:18px;display:flex;flex-direction:column;gap:14px}
+.quiz h3{font-size:18px;display:flex;align-items:center;gap:10px}
+.qcard{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px}
+.qcard p{margin:0;font-weight:700}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.opt{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 12px;font-size:14px}
+.opt:hover:not([disabled]){border-color:var(--dim)}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--mea);background:var(--mea-bg);font-weight:700}
+.opt.wrong{border-color:var(--warn);background:var(--warn-bg)}
+.why{font-size:14px;color:var(--muted)}
+.why b{color:var(--ink)}
+.retry{align-self:flex-start;border:0;background:none;color:var(--dim);font-size:13px;text-decoration:underline;padding:0}
+
+.navrow{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px}
+.navbtn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 14px;font-size:14px;max-width:48%;text-align:left}
+.navbtn small{display:block;color:var(--muted);font-size:12px}
+.navbtn:hover{border-color:var(--dim)}
+.navbtn.next{text-align:right;margin-left:auto}
+
+/* labs */
+.lab{border:1.5px solid var(--dim);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--surface)}
+.lab-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lab-h h3{margin:0;font-size:18px}
+.lab-h .tag{background:var(--dim);color:var(--surface)}
+.goals{display:flex;flex-wrap:wrap;gap:6px}
+.goal{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 12px;font-size:13px}
+.goal.on{background:var(--dim);color:var(--surface);border-color:var(--dim);font-weight:700}
+.cc-out{display:grid;grid-template-columns:140px minmax(0,1fr);gap:16px;align-items:start;background:var(--bg);border-radius:6px;padding:14px}
+.cc-out h4{margin:0 0 4px;font-family:var(--f-display);font-size:20px}
+.cc-out p{margin:0 0 6px;font-size:14px}
+.cc-out .lbl{font-family:var(--f-mono);font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.05em}
+.glyph{width:100%;max-width:140px;height:auto;background:var(--surface);border-radius:6px;border:1px solid var(--line)}
+.glyph .g1{fill:var(--dim)} .glyph .g2{fill:var(--mea)} .glyph .g3{fill:var(--accent)}
+.glyph .gl{fill:none;stroke:var(--dim);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.glyph .gt{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 3}
+.glyph .gb{fill:var(--sunk)} .glyph .ax{stroke:var(--line);stroke-width:1}
+.pills-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.pf{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;flex-wrap:wrap}
+.pf .name{font-weight:700;flex:1;min-width:110px}
+.pf button{border:1.5px solid var(--dim);color:var(--dim);background:var(--surface);border-radius:999px;font-size:12px;font-weight:700;padding:2px 10px}
+.pf button.m{border-color:var(--mea);color:var(--mea)}
+.pf.done{background:var(--surface)}
+.pf .res{flex-basis:100%;font-size:13px;color:var(--muted)}
+.pf .res b.ok{color:var(--mea)} .pf .res b.no{color:var(--warn)}
+.score{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+
+/* day plan */
+.dayshelf{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;display:flex;gap:10px;align-items:center;overflow-x:auto}
+.shelf-label{font-family:var(--f-mono);font-size:12px;color:var(--muted);flex:none;display:flex;align-items:center;gap:6px}
+.shelf-label svg{width:14px;height:14px}
+.days{display:flex;gap:6px;flex:none}
+.dpill{border:1.5px solid var(--dim);color:var(--dim);background:transparent;border-radius:999px;padding:4px 12px;font-weight:700;font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dpill.done{background:var(--mea);border-color:var(--mea);color:var(--surface)}
+.dpill.cur{outline:2px solid var(--accent);outline-offset:2px}
+.dpill.on{background:var(--dim);color:var(--surface)}
+.dpill.done.on{background:var(--mea)}
+.dayview{display:grid;grid-template-columns:minmax(0,1fr) clamp(280px,22vw,360px);gap:18px;align-items:start}
+.daymain{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,3vw,32px);display:flex;flex-direction:column;gap:18px;min-width:0}
+.dayhead h2{font-size:clamp(24px,3.4vw,36px);font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.dayhead .meta{margin-top:10px}
+.side{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px}
+.card h3{font-size:16px}
+.goals-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.goals-list li{display:flex;gap:8px}
+.goals-list li::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;border:2px solid var(--dim);margin-top:6px}
+.task{background:var(--accent-bg);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:6px}
+.task b.lbl{font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+.task p{margin:0}
+.acc{border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.acc + .acc{margin-top:-10px}
+.acc > summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;gap:10px;font-weight:700;background:var(--bg)}
+.acc > summary::-webkit-details-marker{display:none}
+.acc > summary .num{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-weight:400}
+.acc > summary .ok{margin-left:auto;color:var(--mea);font-size:13px}
+.acc > summary .caret{color:var(--muted);font-size:10px;transition:transform .15s}
+.acc[open] > summary .caret{transform:rotate(90deg)}
+.acc-body{padding:18px;display:flex;flex-direction:column;gap:14px}
+.acc-body .lesson-head h2{font-size:22px}
+.daybtns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:1.5px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:6px;padding:9px 16px;font-weight:700;font-size:14px}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.done{background:var(--mea);border-color:var(--mea);color:var(--surface)}
+.sectionlbl{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.sectionlbl h3{font-size:20px}
+.pace{font-size:14px;color:var(--muted);margin:0}
+.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;font-size:13px;max-height:420px;overflow:auto}
+.timeline button{display:flex;gap:8px;width:100%;text-align:left;border:0;background:none;padding:5px 6px;border-radius:4px;align-items:baseline}
+.timeline button:hover{background:var(--sunk)}
+.timeline .dn{font-family:var(--f-mono);color:var(--muted);width:44px;flex:none}
+.timeline .on{background:var(--dim-bg);font-weight:700}
+.timeline .ok{margin-left:auto;color:var(--mea)}
+
+footer{color:var(--muted);font-size:17px;display:flex;justify-content:center;text-align:center;border-top:1px solid var(--line);padding-top:16px}
+footer .credit{color:var(--muted)}
+footer .mail{color:var(--title);font-weight:700;user-select:all;word-break:break-all}
+
+@media (max-width: 900px){
+  .general{grid-template-columns:1fr}
+  .pane{position:static;max-height:none}
+  .pane-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;border:0;background:none;padding:12px;font-weight:700}
+  .pane:not(.open) .pane-head,.pane:not(.open) .toc{display:none}
+  .dayview{grid-template-columns:1fr}
+  .controls{margin-left:0}
+  .controls{width:100%}
+  .hsearch{flex:1 1 100%;min-width:0}
+}
+@media (max-width: 520px){
+  .cc-out{grid-template-columns:1fr}
+  .mh-sub p,.mh-sub .stats{display:none}
+  .ctl-label span{display:none}
+  .navbtn{max-width:100%;width:100%}
+  .navbtn.next{text-align:left}
+  .learn-btn{margin-left:0}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+
+<div class="wrap">
+  <header class="masthead" id="masthead">
+    <div class="mh-row">
+      <div class="brand">
+        <svg viewBox="0 0 34 34" aria-hidden="true"><rect x="3" y="18" width="6" height="13" rx="1.5" fill="var(--dim)"/><rect x="11" y="10" width="6" height="21" rx="1.5" fill="var(--dim)"/><rect x="19" y="4" width="6" height="27" rx="1.5" fill="var(--mea)"/><rect x="27" y="14" width="4" height="17" rx="1.5" fill="var(--accent)"/></svg>
+        <h1>Tableau Learning Lab</h1>
+      </div>
+      <div class="controls">
+        <div class="hsearch" id="hsearch">
+          <label class="hsearch-box" for="gsearch">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="gsearch" type="search" autocomplete="off" spellcheck="false" placeholder="Search all topics" aria-label="Search all topics" aria-controls="sres" aria-expanded="false">
+            <button type="button" class="sclear" id="sclear" aria-label="Clear search" hidden>×</button>
+            <span class="kbd" id="skbd" aria-hidden="true">/</span>
+          </label>
+          <div class="sres" id="sres" role="listbox" hidden></div>
+        </div>
+        <div class="ctl ctl-product" role="group" aria-label="Product">
+          <span class="ctl-label"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="0" y="1" width="3" height="10" fill="var(--dim)"/><rect x="4.5" y="1" width="3" height="10" fill="var(--dim)"/><rect x="9" y="1" width="3" height="10" fill="var(--dim)"/></svg><span>Product</span></span>
+          <div class="seg" id="productPills"></div>
+        </div>
+        <div class="ctl ctl-mode" role="group" aria-label="Mode">
+          <span class="ctl-label"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="0" y="0" width="12" height="3" fill="var(--mea)"/><rect x="0" y="4.5" width="12" height="3" fill="var(--mea)"/><rect x="0" y="9" width="12" height="3" fill="var(--mea)"/></svg><span>Mode</span></span>
+          <div class="seg" id="modePills"></div>
+        </div>
+        <button type="button" class="iconbtn" id="restartBtn" title="Start over" aria-label="Start over from the beginning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+        <button type="button" class="iconbtn" id="themeBtn" aria-label="Switch theme"></button>
+      </div>
+    </div>
+    <div class="mh-sub" id="intro"></div>
+  </header>
+
+  <main id="view"></main>
+
+  <footer>
+    <span class="credit">Built by Gopikrishna | <span class="mail">gkrishna.69800@gmail.com</span></span>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   COURSE CONTENT
+   Block types: p, h, ul, ol, tbl{h,r}, tip, warn, try, code, lab
+   Inline: **bold**, `code`, [[Field|d]] blue pill, [[Field|m]] green pill
+   ============================================================ */
+const COURSES = {
+tableau: {
+name: "Tableau",
+products: {
+
+/* ------------------------------------------------------------ DESKTOP */
+desktop: {
+label: "Tableau Desktop",
+short: "Desktop",
+blurb: "The authoring app. Connect to data, build worksheets, dashboards and stories, then publish them.",
+modules: [
+{ t: "Good to know", topics: [
+{ id:"d-family", t:"The Tableau product family", lvl:"Basic", min:6,
+  lead:"Tableau is a family of tools. Knowing which one does what removes most day-one confusion.",
+  b:[
+   {tbl:{h:["Product","What it does","Access"],r:[
+    ["Tableau Desktop","Main authoring app. Connect to data, build worksheets, dashboards and stories.","Paid licence (Creator)"],
+    ["Tableau Public","Free platform. Work is saved to the web and anyone can view it.","Free"],
+    ["Tableau Prep Builder","Clean, combine and reshape data with visual flows before analysis.","Included with Creator licence"],
+    ["Tableau Server","Your organisation hosts it to share, secure and schedule content.","Self-hosted, licensed"],
+    ["Tableau Cloud","Tableau-hosted version of Server (formerly Tableau Online).","Subscription"],
+    ["Tableau Mobile","App for viewing published dashboards on phones and tablets.","Free app, needs Server or Cloud"]]}},
+   {tip:"A typical workflow: **Prep** cleans the data → **Desktop** builds the analysis → **Server/Cloud** shares it. **Public** is where you practise and build a portfolio."}
+  ],
+  q:[{q:"Which product saves your work to the open web where anyone can see it?",o:["Tableau Desktop","Tableau Public","Tableau Server","Tableau Prep Builder"],a:1,w:"Tableau Public is free, and everything saved there is publicly visible."},
+     {q:"You need to remove duplicates and fix misspelled city names before analysis. Which tool is built for that?",o:["Tableau Mobile","Tableau Cloud","Tableau Prep Builder","Tableau Public"],a:2,w:"Prep Builder is the data-cleaning and shaping tool."}]},
+
+{ id:"d-ui", t:"Tour of the workspace", lvl:"Basic", min:10,
+  lead:"Tableau has three main spaces: the Start page, the Data Source page and the worksheet. Learn the names now; every tutorial uses them.",
+  b:[
+   {h:"Start page"},
+   {ul:["**Connect pane** (left): To a File, To a Server, Saved Data Sources.","**Open**: thumbnails of recent workbooks.","**Discover**: training videos, resources and featured vizzes."]},
+   {h:"Data Source page"},
+   {ul:["**Canvas**: drag tables here and define relationships or joins.","**Data grid**: a preview of rows so you can check headers and types.","**Connection** (top right): choose Live or Extract.","**Filters** (top right): add data source filters."]},
+   {h:"Worksheet"},
+   {tbl:{h:["Area","Where","Used for"],r:[
+    ["Data pane","Left","Fields grouped by table. Dimensions sit above the line, measures below."],
+    ["Analytics pane","Left, second tab","Drag in reference lines, trend lines, forecasts, clusters."],
+    ["Columns & Rows shelves","Top","Fields here create the structure: headers or axes."],
+    ["Marks card","Left of the view","Mark type plus Color, Size, Label, Detail, Tooltip, Shape."],
+    ["Filters shelf","Above Marks","Restrict which data is shown."],
+    ["Pages shelf","Above Filters","Step or animate through one member at a time."],
+    ["Show Me","Top right","Suggests chart types for the fields you selected."],
+    ["View","Centre","Where the visualization is drawn."],
+    ["Sheet tabs","Bottom","New Worksheet, New Dashboard and New Story icons."],
+    ["Status bar","Very bottom","Number of marks, rows × columns, SUM of selection."]]}},
+   {try:"Open Tableau, connect to **Sample – Superstore**, click **Sheet 1** and point at each area in the table above."}
+  ],
+  q:[{q:"Where do you change a chart from bars to lines?",o:["Columns shelf","Marks card dropdown","Pages shelf","Status bar"],a:1,w:"The mark-type dropdown on the Marks card controls how marks are drawn."},
+     {q:"Which icons at the bottom of the window create a new dashboard?",o:["Sheet tabs bar","Analytics pane","Show Me","Data grid"],a:0,w:"The sheet tabs bar has icons for New Worksheet, New Dashboard and New Story."}]},
+
+{ id:"d-ext", t:"File types & extensions", lvl:"Basic", min:8,
+  lead:"Every Tableau file extension tells you whether data travels with the file. This decides how you share work.",
+  b:[
+   {tbl:{h:["Extension","Name","What is inside","Use it when"],r:[
+    ["`.twb`","Workbook","Sheets, dashboards, stories, calcs and connection info. **No data.**","Recipient can reach the same data source"],
+    ["`.twbx`","Packaged Workbook","The .twb plus local data files or extracts, images and custom shapes, zipped","Emailing, offline sharing, Tableau Public"],
+    ["`.tds`","Data Source","Connection info plus renames, calcs, groups and default formats. No data.","Reusing a cleaned-up connection"],
+    ["`.tdsx`","Packaged Data Source",".tds plus local files or extract","Sharing a ready-to-use source with its data"],
+    ["`.hyper`","Extract","Compressed, columnar snapshot of data (Tableau 10.5+)","Speed, offline work, Tableau Public"],
+    ["`.tde`","Legacy extract","Extract format used before 10.5","Opening old work; upgrade to .hyper"],
+    ["`.tbm`","Bookmark","A single worksheet saved for reuse","Moving a favourite sheet between workbooks"],
+    ["`.tps`","Preferences","Custom color palettes (Preferences.tps)","Applying brand colors"],
+    ["`.tfl`","Prep flow","Prep Builder steps. No data.","Sharing flows when data is reachable"],
+    ["`.tflx`","Packaged Prep flow","Flow plus local input files","Sharing flows with data"]]}},
+   {tip:"**My Tableau Repository** (inside Documents) holds folders for Workbooks, Datasources, Bookmarks, Shapes, Logs and the Preferences.tps file."},
+   {warn:"A `.twb` stores a path to your data. Move or rename the Excel file and Tableau asks you to locate it again."}
+  ],
+  q:[{q:"You must email a workbook to someone who cannot reach your Excel file. Which format?",o:[".twb",".twbx",".tds",".tbm"],a:1,w:"A packaged workbook (.twbx) bundles the data with the workbook."},
+     {q:"Where do custom color palettes live?",o:["In each .twb","Preferences.tps in My Tableau Repository","Inside the .hyper extract","In the .tds file"],a:1,w:"Custom palettes are added to Preferences.tps and then appear in Edit Colors."}]},
+
+{ id:"d-sources", t:"What data you can bring in", lvl:"Basic", min:8,
+  lead:"Tableau reads files, databases and cloud apps. Start with files; the same skills carry over to servers.",
+  b:[
+   {tbl:{h:["Category","File types / examples","Notes"],r:[
+    ["Microsoft Excel","`.xls`, `.xlsx`","Each sheet or named range appears as a table"],
+    ["Text file","`.csv`, `.txt`, `.tsv`, `.tab`","Tableau detects delimiter and header; adjust in Text File Properties"],
+    ["JSON","`.json`","Pick which schema levels to flatten"],
+    ["PDF","`.pdf`","Tableau scans pages for tables; you choose which to use"],
+    ["Spatial file","`.shp` (with .dbf, .shx, .prj), `.kml`, `.geojson`, `.topojson`, MapInfo `.tab`/`.mif`, zipped Esri `.gdb`","Adds a Geometry field for maps"],
+    ["Statistical file","`.sas7bdat` (SAS), `.sav` (SPSS), `.rda`/`.rdata` (R)","Keeps variable labels where possible"],
+    ["Microsoft Access","`.mdb`, `.accdb`","Windows only"],
+    ["Tableau extract","`.hyper` (older: `.tde`)","Opens directly as a data source"],
+    ["Servers & cloud","SQL Server, MySQL, PostgreSQL, Oracle, Snowflake, BigQuery, Redshift, Databricks, Salesforce, Google Sheets, OData and more","Connect → To a Server. The list varies by version and edition"]]}},
+   {tip:"For Excel: one header row, no merged cells, no blank rows at the top, no totals rows. If the sheet is messy, tick **Use Data Interpreter**."}
+  ],
+  q:[{q:"A shapefile (.shp) needs which files beside it in the same folder?",o:["A .twbx","Its .dbf and .shx (and usually .prj)","A .tds","Nothing else"],a:1,w:"A shapefile is a set of files; the .shp alone is not enough."},
+     {q:"Which source is available only on Windows?",o:["CSV","JSON","Microsoft Access","PDF"],a:2,w:"The Microsoft Access connector is Windows-only."}]},
+
+{ id:"d-livextract", t:"Live connection vs Extract", lvl:"Basic", min:7,
+  lead:"A live connection queries the source every time. An extract is a fast snapshot saved as a .hyper file.",
+  b:[
+   {tbl:{h:["","Live","Extract (.hyper)"],r:[
+    ["Freshness","Always current","Snapshot; refresh manually or on a schedule"],
+    ["Speed","Depends on the database","Usually fast; built for Tableau"],
+    ["Works offline","No","Yes"],
+    ["Load on database","Every click sends a query","Only during refresh"],
+    ["Size control","Whole table","Extract filters, aggregate for visible dimensions, hide unused fields, top N rows"],
+    ["Tableau Public","Not allowed","Required"]]}},
+   {ol:["On the Data Source page, top right, choose **Live** or **Extract**.","Click **Edit** beside Extract to add filters or tick **Aggregate data for visible dimensions**.","Click a sheet tab. Tableau asks where to save the .hyper file.","Later: **Data → [source] → Extract → Refresh**."]},
+   {tip:"**Incremental refresh** adds only new rows, using a field such as an ID or date. **Full refresh** rebuilds the whole extract."}
+  ],
+  q:[{q:"Your database is slow and you work on a train. What do you use?",o:["Live connection","Extract","Data blending","A .tds file"],a:1,w:"Extracts are fast and work offline."}]},
+
+{ id:"d-vocab", t:"Fields, rows, marks & granularity", lvl:"Basic", min:8,
+  lead:"A small vocabulary covers most of Tableau. Learn these terms and documentation becomes easy to read.",
+  b:[
+   {tbl:{h:["Term","Meaning","Example"],r:[
+    ["Field","A column of your data, listed in the Data pane","Order Date, Sales"],
+    ["Row / record","One line in the table","One product line in an order"],
+    ["Member / value","One item inside a field","'West' in Region"],
+    ["Header","Labels created by a discrete field","Region names across the top"],
+    ["Granularity","What one row represents","One row = one product in one order"],
+    ["Level of detail of the view","The combination of dimensions in the view","Region × Category = 12 marks"],
+    ["Mark","One drawn item","Each bar, dot or table cell"],
+    ["Pill","A field placed on a shelf or card","[[Region|d]] on Columns"],
+    ["Generated fields","Fields Tableau creates for you","Measure Names, Measure Values, Latitude/Longitude (generated), <Table> (Count)"]]}},
+   {tip:"Before you build anything, ask **what is one row?** Most wrong totals come from misreading granularity."}
+  ],
+  q:[{q:"Region has 4 values and Category has 3. With both on the view as dimensions, how many bars appear (if all combinations exist)?",o:["7","12","4","3"],a:1,w:"The view's level of detail is every combination: 4 × 3 = 12 marks."}]},
+
+{ id:"d-types", t:"Data types & their icons", lvl:"Basic", min:6,
+  lead:"Every field has a data type, shown as a small icon. The type controls which functions and charts work.",
+  b:[
+   {tbl:{h:["Icon","Type","Examples"],r:[
+    ["`Abc`","String (text)","Customer Name, Ship Mode"],
+    ["`#`","Number (decimal or whole)","Sales, Quantity"],
+    ["calendar","Date","Order Date"],
+    ["calendar + clock","Date & time","Created At"],
+    ["`T|F`","Boolean","Is Returned"],
+    ["globe","Geographic role (on text or number)","Country, State, Postal Code"],
+    ["paperclip / Venn","Group / Set","Region Group, Top Customers"]]}},
+   {p:"To change a type, click the icon in the Data pane or the data grid and pick a new type."},
+   {warn:"Dates stored as text (e.g., '2024-03-15') show `Abc`. Change them to Date or Tableau cannot draw a timeline."}
+  ],
+  q:[{q:"Order Date shows an Abc icon. What is the problem?",o:["Nothing","It is stored as text and must be converted to Date","It is a measure","It is a set"],a:1,w:"Abc means string. Convert to Date to unlock date features."}]},
+
+{ id:"d-dimmeas", t:"Dimensions vs Measures", lvl:"Basic", min:10,
+  lead:"Dimensions slice the data into groups. Measures are numbers that get aggregated. This one idea explains most of Tableau.",
+  b:[
+   {tbl:{h:["","Dimension","Measure"],r:[
+    ["Holds","Qualitative values: names, categories, dates, IDs","Quantitative values you can do maths on"],
+    ["In the view","Creates headers and splits marks","Gets aggregated (SUM, AVG…)"],
+    ["Examples","Region, Category, Customer ID, Postal Code","Sales, Profit, Quantity, Discount"],
+    ["Data pane","Above the line","Below the line"]]}},
+   {ul:["Tableau guesses the role: text and dates become dimensions, numbers become measures.","Numeric codes such as Postal Code, Row ID or Year number are usually dimensions. Right-click → **Convert to Dimension**.","You can drag a field across the line in the Data pane to switch its role."]},
+   {lab:"pills"}
+  ],
+  q:[{q:"Which field should be a dimension even though it contains numbers?",o:["Sales","Postal Code","Profit","Discount"],a:1,w:"You never add postal codes together; they label places."}]},
+
+{ id:"d-disccont", t:"Discrete vs Continuous (blue vs green)", lvl:"Basic", min:8,
+  lead:"Pill color tells you how Tableau draws a field. Blue is discrete and makes headers. Green is continuous and makes an axis.",
+  b:[
+   {tbl:{h:["","Discrete (blue)","Continuous (green)"],r:[
+    ["Draws","Headers, separate panes","An axis with a range"],
+    ["Values","Distinct, separate items","Any value along a range"],
+    ["Date example","[[YEAR(Order Date)|d]] → 2023, 2024 columns","[[MONTH(Order Date)|m]] → one unbroken timeline"],
+    ["Filter card","Checkbox list","Range slider"]]}},
+   {p:"Dimension/measure and discrete/continuous are separate ideas. A measure is usually continuous, but you can right-click it → **Discrete** to show numbers as headers. A date can be either."},
+   {tip:"On a date pill menu, the top group (Year, Quarter, Month…) are **date parts**, discrete by default. The second group are **date values** (truncated dates), continuous by default."}
+  ],
+  q:[{q:"You want one continuous line across all months of all years. Which pill?",o:["Blue MONTH(Order Date) date part","Green MONTH(Order Date) date value","Blue YEAR(Order Date)","Order Date on Filters"],a:1,w:"A continuous date value draws one timeline axis."},
+     {q:"A green pill on Columns creates…",o:["Headers","An axis","A filter","A tooltip"],a:1,w:"Continuous fields create axes."}]},
+
+{ id:"d-agg", t:"Aggregation", lvl:"Basic", min:7,
+  lead:"When a measure lands in the view, Tableau rolls many rows into one number per mark. You choose how.",
+  b:[
+   {tbl:{h:["Aggregation","Returns","Use when"],r:[
+    ["SUM","Total","Sales, quantity"],
+    ["AVG","Mean of rows","Average order line value"],
+    ["MEDIAN","Middle value","Skewed values such as salaries"],
+    ["COUNT","Non-null rows","How many order lines"],
+    ["COUNTD","Distinct values","How many customers"],
+    ["MIN / MAX","Smallest / largest","First order date, biggest discount"],
+    ["ATTR","The value if only one exists, otherwise *","Labels where the value is unique per mark"],
+    ["STDEV / VAR","Spread","Variability"]]}},
+   {ul:["Change a pill: right-click → **Measure (Sum)** → pick another.","Change the default: right-click field → **Default Properties → Aggregation**.","**Analysis → Aggregate Measures** (untick) shows every row, useful for raw scatter plots."]}
+  ],
+  q:[{q:"When does ATTR([State]) show an asterisk (*)?",o:["When State is null","When a mark contains more than one State","When State is a measure","Never"],a:1,w:"ATTR returns the value only if it is the same for every row in the mark."},
+     {q:"How many unique customers bought something?",o:["COUNT([Customer ID])","COUNTD([Customer ID])","SUM([Customer ID])","MAX([Customer ID])"],a:1,w:"COUNTD counts distinct values."}]}
+]},
+
+{ t: "Chart types", topics: [
+{ id:"d-chartmap", t:"Which chart for which data", lvl:"Basic", min:12,
+  lead:"Start from the question you are answering. The right chart follows from it.",
+  b:[
+   {lab:"chart"},
+   {tbl:{h:["Question","Best chart","Avoid"],r:[
+    ["Compare categories","Sorted bar","Pie with many slices"],
+    ["Change over time","Line; area for volume","Bars for long daily series"],
+    ["Part-to-whole","Stacked bar, treemap; pie only for 2–5 parts","3-D anything"],
+    ["Distribution","Histogram, box plot","Showing only the average"],
+    ["Relationship between two measures","Scatter plot with trend line","Two unrelated lines"],
+    ["Location","Filled map for rates, symbol map for amounts","Filled map of raw totals"],
+    ["Ranking","Sorted bar; bump chart for rank over time","Unsorted bars"],
+    ["Exact lookup","Text table, highlight table","Charts when people need the number"],
+    ["Actual vs target","Bullet chart","Gauges"],
+    ["Schedule / duration","Gantt chart","Stacked bars"],
+    ["Two measures, different scales","Dual-axis combo (bar + line)","Unsynchronised axes that mislead"]]}}
+  ],
+  q:[{q:"Your manager asks how monthly revenue changed over 3 years. Best chart?",o:["Pie","Line","Treemap","Text table"],a:1,w:"Lines show trends over continuous time."},
+     {q:"You want to see how order sizes are spread out. Best chart?",o:["Histogram","Pie","Filled map","Bullet"],a:0,w:"Histograms show distribution."}]},
+
+{ id:"d-showme", t:"Show Me and its rules", lvl:"Basic", min:5,
+  lead:"Show Me suggests charts that fit the fields you selected and tells you what each one needs.",
+  b:[
+   {ol:["Ctrl-click (Cmd-click on Mac) fields in the Data pane.","Open **Show Me** at the top right.","Highlighted thumbnails are possible; grey ones are not.","Hover a thumbnail and read the hint at the bottom, e.g. **For histograms try 1 measure**.","Click to apply, then refine on the Marks card."]},
+   {tip:"Show Me is a starting point. Rebuild each chart by hand afterwards so you understand the shelves."}
+  ],
+  q:[{q:"A Show Me thumbnail is greyed out. Why?",o:["It is a paid feature","Your selected fields don't meet its requirements","The workbook is not saved","You are offline"],a:1,w:"Hover it to see what fields it needs."}]},
+
+{ id:"d-recipes", t:"Chart build recipes", lvl:"Intermediate", min:20,
+  lead:"Shelf-by-shelf recipes for the charts you'll build most, using Sample – Superstore field names.",
+  b:[
+   {tbl:{h:["Chart","Columns","Rows","Marks card"],r:[
+    ["Bar","[[Category|d]]","[[SUM(Sales)|m]]","Bar; Color: Category"],
+    ["Line (trend)","[[MONTH(Order Date)|m]]","[[SUM(Sales)|m]]","Line"],
+    ["Area","[[MONTH(Order Date)|m]]","[[SUM(Sales)|m]]","Area; Color: Segment"],
+    ["Stacked bar","[[Region|d]]","[[SUM(Sales)|m]]","Bar; Color: Category"],
+    ["Scatter","[[SUM(Sales)|m]]","[[SUM(Profit)|m]]","Circle; Detail: Customer Name"],
+    ["Pie","—","—","Pie; Angle: SUM(Sales); Color: Segment"],
+    ["Treemap","—","—","Square; Size & Color: SUM(Sales); Label: Sub-Category"],
+    ["Heat map","[[Category|d]]","[[Region|d]]","Square; Color: SUM(Profit)"],
+    ["Highlight table","[[Region|d]]","[[Sub-Category|d]]","Square; Color & Label: SUM(Sales)"],
+    ["Histogram","[[Quantity (bin)|d]]","[[CNT(Quantity)|m]]","Bar; create bins first"],
+    ["Box plot","[[Region|d]]","[[SUM(Profit)|m]]","Circle; Detail: Customer; Analytics → Box Plot"],
+    ["Dual-axis combo","[[MONTH(Order Date)|m]]","[[SUM(Sales)|m]] [[SUM(Profit)|m]]","Right-click 2nd pill → Dual Axis → Synchronize Axis"],
+    ["Gantt","[[DAY(Order Date)|m]]","[[Order ID|d]]","Gantt Bar; Size: Days to Ship (calc)"],
+    ["Bullet","[[SUM(Sales)|m]]","[[Sub-Category|d]]","Bar; Detail: Target; reference line = Target"],
+    ["Symbol map","[[Longitude (generated)|m]]","[[Latitude (generated)|m]]","Circle; Detail: State; Size: SUM(Sales)"],
+    ["Packed bubbles","—","—","Circle; Size: SUM(Sales); Color & Label: Category"]]}},
+   {try:"Rebuild five of these in one workbook, one chart per sheet. Name each sheet tab after its chart."}
+  ],
+  q:[{q:"For a scatter plot of customers, where does Customer Name go?",o:["Columns","Rows","Detail on the Marks card","Filters"],a:2,w:"Detail splits the marks to one per customer without adding headers."}]}
+]},
+
+{ t: "Connect & shape data", topics: [
+{ id:"d-connect", t:"Connect to Excel or CSV", lvl:"Basic", min:8,
+  lead:"Your first upload. Most real projects start with a spreadsheet.",
+  b:[
+   {ol:["Start page → **To a File → Microsoft Excel** (or **Text file** for CSV).","Pick the file. Its sheets appear on the left of the Data Source page.","Drag a sheet onto the canvas (or double-click it).","Check the preview grid: are headers correct? Are icons (types) correct?","If the sheet has titles, blank rows or merged cells, tick **Use Data Interpreter**, then **Review the results**.","Click **Sheet 1** to start building."]},
+   {tip:"Save often with **Ctrl+S**. Use **File → Save As** and choose .twbx when you want to share the data too."}
+  ],
+  q:[{q:"Your Excel sheet has a title row and blank rows above the real header. Quickest fix in Tableau?",o:["Retype the data","Use Data Interpreter","Create a set","Use a context filter"],a:1,w:"Data Interpreter detects and skips titles, blanks and footers."}]},
+
+{ id:"d-clean", t:"Clean on the Data Source page", lvl:"Basic", min:10,
+  lead:"Small fixes on the Data Source page save hours later.",
+  b:[
+   {ul:["**Rename**: double-click a column header in the grid.","**Hide**: column menu → Hide, keeps it out of the Data pane.","**Split**: column menu → Split or Custom Split (by delimiter, first/last/all N).","**Pivot**: select several columns (Jan, Feb, Mar…) → Pivot. Rename the results Month and Sales.","**Change type**: click the type icon.","**Aliases**: column menu → Aliases to rename values.","**Calculated field**: column menu → Create Calculated Field.","**Data source filter**: Filters → Add (top right)."]},
+   {tip:"Wide data (one column per month) is hard to chart. Pivot it to long data (one Month column, one value column)."}
+  ],
+  q:[{q:"Your data has columns Jan, Feb, Mar… Dec. What should you do before charting a trend?",o:["Split","Pivot","Hide","Blend"],a:1,w:"Pivot turns the month columns into rows: Month + Value."}]},
+
+{ id:"d-rel", t:"Relationships (the logical layer)", lvl:"Intermediate", min:10,
+  lead:"Since Tableau 2020.2, the default way to combine tables is a relationship, drawn as a flexible line called a noodle.",
+  b:[
+   {ul:["Drag a second table onto the canvas; a noodle appears. Pick the matching fields.","The **logical layer** (what you see first) holds relationships.","Double-click a table to open its **physical layer**, where joins and unions live.","Relationships keep each table at its own level of detail, so values are not duplicated.","Tableau chooses join types per view, based on the fields you use.","Performance options: **cardinality** (Many/One) and **referential integrity** (Some/All records match)."]},
+   {tbl:{h:["","Relationship","Join"],r:[
+    ["When combined","At query time, per view","Before analysis, fixed"],
+    ["Row duplication","Avoided","Possible when keys repeat"],
+    ["Join type","Chosen automatically","You choose"],
+    ["Best for","Most multi-table models","One flat table or specific join logic"]]}}
+  ],
+  q:[{q:"Where do you go to build a classic inner join instead of a relationship?",o:["Double-click a table to open the physical layer","Analytics pane","Marks card","Show Me"],a:0,w:"Joins and unions are made in the physical layer."}]},
+
+{ id:"d-joins", t:"Joins", lvl:"Intermediate", min:12,
+  lead:"A join glues tables side by side using matching key values.",
+  b:[
+   {tbl:{h:["Join","Keeps"],r:[
+    ["Inner","Only rows that match in both tables"],
+    ["Left","All left rows plus matches from the right; nulls where none"],
+    ["Right","All right rows plus matches from the left"],
+    ["Full outer","All rows from both; nulls where no match"]]}},
+   {ol:["Double-click the table on the canvas to open the physical layer.","Drag the second table beside it.","Click the Venn icon and pick the join type.","Set the join clause, e.g. Order ID = Order ID. Add more clauses if needed.","Operators include =, <>, <, <=, >, >=.","Use **Join Calculation** when keys need cleaning, e.g. TRIM(UPPER([Code]))."]},
+   {warn:"Joining one-row-per-order data to many-rows-per-order data repeats the order values, and SUM over-counts. Use a relationship, or an LOD/AVG to correct it."}
+  ],
+  q:[{q:"You need every order, even those with no return record. Orders is left, Returns is right. Which join?",o:["Inner","Left","Right","Union"],a:1,w:"A left join keeps all orders and adds return info where it exists."}]},
+
+{ id:"d-union", t:"Unions (stack rows)", lvl:"Intermediate", min:8,
+  lead:"A union stacks tables with the same columns on top of each other: Jan + Feb + Mar data.",
+  b:[
+   {h:"Manual union"},
+   {ol:["Open the physical layer.","Drag a table directly under the first one until **Drag table to union** appears.","Drop it."]},
+   {h:"Wildcard union"},
+   {ol:["Drag **New Union** onto the canvas.","Choose **Wildcard (automatic)**.","Set a pattern such as `Sales_202*.xlsx`; optionally search subfolders.","Every new file that matches is picked up on refresh."]},
+   {ul:["Generated fields **Sheet**, **Table Name** and **Path** show where each row came from.","Mismatched column names? Select both → **Merge Mismatched Fields**."]},
+   {tip:"Unions are how you append each new month of data to an existing dashboard."}
+  ],
+  q:[{q:"January, February and March sales are in three identical sheets. You want one table. Use…",o:["Join","Union","Blend","Set"],a:1,w:"Same columns, more rows: that is a union."}]},
+
+{ id:"d-blend", t:"Data blending", lvl:"Advanced", min:10,
+  lead:"Blending combines data from separate data sources inside one sheet, using a shared field.",
+  b:[
+   {ol:["Add both data sources to the workbook.","Build the view from the **primary** source (first source used; blue check mark).","Switch to the **secondary** source in the Data pane.","Click the grey chain icon next to the common field. It turns orange: linked.","Secondary measures are aggregated to the linking level, then added (works like a left join)."]},
+   {ul:["Edit links: **Data → Edit Blend Relationships**.","Use when sources are at different granularity (daily sales vs monthly targets) or cannot be joined.","Some functions (such as COUNTD and LOD expressions) are limited on the secondary source."]},
+   {tbl:{h:["Need","Use"],r:[["Same database, related tables","Relationship"],["Specific row-level match logic","Join"],["Same columns, more rows","Union"],["Separate sources, different detail, per sheet","Blend"]]}}
+  ],
+  q:[{q:"What does the orange chain icon mean?",o:["The field is hidden","The field is an active blend link","The extract failed","It is a set"],a:1,w:"An orange chain marks an active linking field for blending."}]},
+
+{ id:"d-dsfilter", t:"Extract, data source & context filters", lvl:"Intermediate", min:6,
+  lead:"Filters apply at different stages. Choosing the right stage keeps workbooks fast and correct.",
+  b:[
+   {tbl:{h:["Filter","Where set","Effect"],r:[
+    ["Extract filter","Extract → Edit","Rows never enter the .hyper; smaller, faster file"],
+    ["Data source filter","Data Source page → Filters → Add","Applies to every sheet using the source; viewers can't see or change it"],
+    ["Context filter","Filters shelf pill → Add to Context (turns grey)","Runs before other dimension filters; needed for Top N within a subset"],
+    ["Dimension / measure filter","Filters shelf","Normal sheet-level filtering"]]}}
+  ],
+  q:[{q:"You must hide all 2019 data from every sheet and every viewer. Use…",o:["A quick filter","A data source filter","A highlight action","A set"],a:1,w:"Data source filters apply everywhere and aren't visible to viewers."}]}
+]},
+
+{ t: "Build views", topics: [
+{ id:"d-firstviz", t:"Your first chart in 60 seconds", lvl:"Basic", min:8,
+  lead:"A simple representation of an uploaded table, from blank sheet to labelled chart.",
+  b:[
+   {ol:["Connect to **Sample – Superstore** (in My Tableau Repository → Datasources) and use the Orders sheet.","Drag [[Category|d]] to **Columns**.","Drag [[Sales|m]] to **Rows**. Tableau draws SUM(Sales) as bars.","Drag [[Region|d]] to **Color** on the Marks card.","Click **Sort descending** on the toolbar.","Click **Show Mark Labels** on the toolbar.","Double-click the sheet tab and rename it 'Sales by Category'.","Press Ctrl+S and save as .twbx."]},
+   {try:"Press **Ctrl+W** to swap Rows and Columns. Horizontal bars read better when names are long."}
+  ],
+  q:[{q:"Which shortcut swaps Rows and Columns?",o:["Ctrl+S","Ctrl+W","Ctrl+M","F7"],a:1,w:"Ctrl+W swaps the fields on Rows and Columns."}]},
+
+{ id:"d-marks", t:"The Marks card", lvl:"Basic", min:10,
+  lead:"The Marks card controls what each mark looks like and what extra information it carries.",
+  b:[
+   {tbl:{h:["Property","Encodes","Tip"],r:[
+    ["Mark type","Bar, Line, Area, Square, Circle, Shape, Text, Map, Pie, Gantt Bar, Polygon, Density","Automatic picks for you"],
+    ["Color","Category (palette) or value (gradient)","Color → Edit Colors; opacity and border"],
+    ["Size","Magnitude","Click Size and drag the slider"],
+    ["Label / Text","Values on the marks","Options: all, min/max, selected"],
+    ["Detail","Splits marks without visual encoding","Raises the view's level of detail"],
+    ["Tooltip","Hover text","Edit text; Insert → Sheets for viz-in-tooltip"],
+    ["Shape","Category as icons","Custom shapes go in My Tableau Repository → Shapes"],
+    ["Path","Order of points on Line/Polygon","Routes, flows"],
+    ["Angle","Slice size","Only with the Pie mark"]]}},
+   {tip:"Dimensions on Color, Size, Label, Detail or Shape add marks. On Tooltip they don't; Tableau wraps them in ATTR()."}
+  ],
+  q:[{q:"You want one dot per customer but no customer names shown. Put Customer Name on…",o:["Label","Detail","Columns","Pages"],a:1,w:"Detail splits marks without showing headers or labels."}]},
+
+{ id:"d-sortfmt", t:"Sorting & formatting", lvl:"Basic", min:10,
+  lead:"Clean sorting and formatting are what make a chart look professional.",
+  b:[
+   {ul:["**Quick sort**: icons on the axis, header or toolbar.","**Field sort**: right-click pill → Sort → Data source order, Alphabetic, Field (e.g., by SUM of Sales), Manual or Nested.","**Format anything**: right-click → Format… opens the Format pane (Font, Alignment, Shading, Borders, Lines).","**Workbook-wide fonts**: Format → Workbook.","**Number format**: right-click measure → Default Properties → Number Format.","**Titles**: Worksheet → Show Title; insert dynamic fields such as <Sheet Name>.","**Captions**: Worksheet → Show Caption for an auto-written description."]}
+  ],
+  q:[{q:"You want every sheet in the workbook to use the same font in one go. Where?",o:["Format → Workbook","Each Format pane","Marks card","Data pane"],a:0,w:"Format → Workbook sets defaults for the whole workbook."}]},
+
+{ id:"d-hier", t:"Hierarchies & drill down", lvl:"Basic", min:6,
+  lead:"Hierarchies let viewers drill from a summary into detail with a + icon.",
+  b:[
+   {ol:["Drag [[Sub-Category|d]] onto [[Category|d]] in the Data pane and name the hierarchy.","Drag the hierarchy to Rows.","Click **+** on the pill to drill down; **−** to roll up."]},
+   {ul:["Dates come with a built-in hierarchy: Year → Quarter → Month → Day.","Drag a field out of the hierarchy to remove it."]}
+  ],
+  q:[{q:"How do you create a hierarchy?",o:["Drag one dimension onto another in the Data pane","Use a context filter","Create a set","Blend sources"],a:0,w:"Dropping a field onto another starts a hierarchy."}]},
+
+{ id:"d-groups", t:"Groups, sets, bins & aliases", lvl:"Intermediate", min:12,
+  lead:"Four ways to reorganise members without changing the source data.",
+  b:[
+   {tbl:{h:["Feature","Icon","What it does","How to create"],r:[
+    ["Group","paperclip","Combines members into a bigger bucket (East + Central = 'Eastern')","Select marks → paperclip icon, or right-click field → Create → Group"],
+    ["Set","Venn circles","A subset with IN / OUT members","Right-click field → Create → Set: by list, by Condition (Profit > 0) or by Top (Top 10 by Sales)"],
+    ["Combined set","Venn","Union, intersection or difference of two sets","Select two sets → Create Combined Set"],
+    ["Bin","histogram","Turns a measure into equal-size buckets (a dimension)","Right-click measure → Create → Bins"],
+    ["Alias","—","Renames values for display only","Right-click field → Aliases"]]}}
+  ],
+  q:[{q:"You need a dynamic 'Top 10 customers by Sales' that updates with the data. Use…",o:["Group","Set (Top)","Alias","Bin"],a:1,w:"A Top set recalculates as data changes."}]},
+
+{ id:"d-multimeasure", t:"Adding multiple columns & measures", lvl:"Intermediate", min:15,
+  lead:"Show several measures together: side by side, on two axes, or in one table.",
+  b:[
+   {h:"1. Measure Names + Measure Values"},
+   {ol:["Double-click [[Sales|m]], then [[Profit|m]]. Tableau switches to Measure Values.","Or drag **Measure Values** to Rows and **Measure Names** to Columns or Color.","Add or remove measures on the Measure Values card below the Marks card."]},
+   {h:"2. Separate axes"},
+   {p:"Drag Sales and Profit both to Rows: two stacked panes, each with its own axis."},
+   {h:"3. Dual axis"},
+   {ol:["Right-click the second measure pill → **Dual Axis**.","Right-click the right-hand axis → **Synchronize Axis** when units match.","Each measure gets its own Marks card: make one Bar and one Line."]},
+   {h:"4. Shared (combined) axis"},
+   {p:"Drag the second measure onto the existing axis until a double green ruler appears. Both measures share one axis, colored by Measure Names."},
+   {h:"5. Wide text table"},
+   {p:"Measure Names on Columns, Measure Values on Text, dimensions on Rows."},
+   {tip:"Dual axis allows exactly two measures. For three or more on one axis, use Measure Values."}
+  ],
+  q:[{q:"You want Sales as bars and Profit as a line on the same chart. Use…",o:["Dual axis","Pages shelf","A set","Blending"],a:0,w:"Dual axis gives each measure its own mark type."},
+     {q:"After a dual axis, Sales and Profit look misleading because the right axis has a different scale. Fix?",o:["Synchronize Axis","Hide the axis","Add a context filter","Use ATTR"],a:0,w:"Synchronize Axis aligns both axes when units match."}]},
+
+{ id:"d-totals", t:"Totals & subtotals", lvl:"Basic", min:5,
+  lead:"Add grand totals and subtotals to tables and bar charts.",
+  b:[
+   {ol:["**Analysis → Totals** → Show Row/Column Grand Totals or Add All Subtotals.","Or drag **Totals** from the Analytics pane onto the view.","Change the method: Analysis → Totals → Total All Using → Sum, Average, Min, Max."]},
+   {tip:"Totals are recalculated from underlying rows. An Average total is the average of all rows, not the average of the visible numbers."}
+  ],
+  q:[{q:"Fastest way to add subtotals to a text table?",o:["Analysis → Totals → Add All Subtotals","Create a calculated field","Use a set","Duplicate the sheet"],a:0,w:"The Totals menu adds subtotals in one click."}]}
+]},
+
+{ t: "Filters", topics: [
+{ id:"d-filters", t:"Filter types & options", lvl:"Basic", min:10,
+  lead:"Drag any field to the Filters shelf. The dialog you get depends on the field type.",
+  b:[
+   {tbl:{h:["Field","Options"],r:[
+    ["Dimension","General (pick values), Wildcard (contains/starts with), Condition (by a formula or measure), Top (Top N by a field)"],
+    ["Measure","Range of values, At least, At most, Special (null / non-null). Choose the aggregation first."],
+    ["Date","Relative dates (last 3 months), Range of dates, Starting/Ending date, or individual date parts"]]}},
+   {try:"Filter Superstore to customers whose Sales are at least 5,000 using a Condition filter on Customer Name."}
+  ],
+  q:[{q:"You need 'last 6 months' that rolls forward automatically. Use…",o:["Range of dates","Relative date filter","Wildcard","Alias"],a:1,w:"Relative dates move with today's date."}]},
+
+{ id:"d-showfilter", t:"Interactive filter cards", lvl:"Basic", min:8,
+  lead:"Show a filter on the view so viewers can change it.",
+  b:[
+   {ul:["Right-click a pill → **Show Filter**.","Card styles: single value (list, dropdown, slider), multiple values (list, dropdown), wildcard match, range slider for continuous fields.","Card menu → **Only Relevant Values** cascades filters (shows values that exist given other filters).","Card menu → **Apply to Worksheets**: All Using This Data Source, All Using Related Data Sources, Selected Worksheets, Only This Worksheet.","Customize: hide 'All', show Apply button, include null control."]}
+  ],
+  q:[{q:"One Region filter should control every sheet in a dashboard using the same source. Set…",o:["Apply to Worksheets → All Using This Data Source","Only Relevant Values","Add to Context","Exclude"],a:0,w:"Apply to Worksheets controls which sheets a filter affects."}]},
+
+{ id:"d-order", t:"Order of operations", lvl:"Advanced", min:10,
+  lead:"Tableau applies filters and calculations in a fixed sequence. Most 'wrong number' bugs are order-of-operations bugs.",
+  b:[
+   {ol:["Extract filters","Data source filters","Context filters","Sets, conditional filters, Top N filters and FIXED LOD expressions","Dimension filters","Data blending; INCLUDE and EXCLUDE LOD expressions","Measure filters","Forecasts, table calculations, totals","Table calculation filters","Trend lines and reference lines"]},
+   {try:"Build Top 10 customers by Sales. Add a Region filter for West. The list is wrong (top 10 overall, then West). Right-click Region → **Add to Context** and it becomes the Top 10 within West."}
+  ],
+  q:[{q:"Why does a FIXED LOD ignore your normal Region filter?",o:["It's a bug","FIXED runs before dimension filters","FIXED runs after table calcs","Regions can't be filtered"],a:1,w:"FIXED is computed before dimension filters. Make the filter a context filter to affect it."}]}
+]},
+
+{ t: "Calculations", topics: [
+{ id:"d-calc", t:"Calculated fields basics", lvl:"Intermediate", min:8,
+  lead:"Calculated fields create new data from existing fields: ratios, categories, flags, dates.",
+  b:[
+   {ol:["**Analysis → Create Calculated Field** (or right-click in the Data pane → Create → Calculated Field).","Name it.","Type the formula. Field names go in [square brackets]; autocomplete helps.","Add notes with // comments.","Wait for **The calculation is valid** and click OK. The new field shows an = sign on its icon."]},
+   {code:`// Profit ratio (aggregate calculation)
+SUM([Profit]) / SUM([Sales])`},
+   {tip:"Show it as a percentage: right-click → Default Properties → Number Format → Percentage."}
+  ],
+  q:[{q:"How do you reference a field inside a calculation?",o:["(Sales)","{Sales}","[Sales]","'Sales'"],a:2,w:"Fields go in square brackets."}]},
+
+{ id:"d-funcs", t:"Essential functions", lvl:"Intermediate", min:15,
+  lead:"A small set of functions covers most everyday calculations.",
+  b:[
+   {tbl:{h:["Family","Function","Example","Result"],r:[
+    ["String","LEFT / RIGHT / MID","`LEFT([Order ID], 2)`","'CA'"],
+    ["String","CONTAINS","`CONTAINS([Product Name], 'Chair')`","TRUE / FALSE"],
+    ["String","SPLIT","`SPLIT([Customer Name], ' ', 1)`","First name"],
+    ["String","UPPER / LOWER / TRIM","`TRIM(UPPER([City]))`","'NEW YORK'"],
+    ["String","REPLACE","`REPLACE([Phone], '-', '')`","Digits only"],
+    ["Number","ROUND","`ROUND([Discount] * 100, 0)`","20"],
+    ["Number","ZN","`ZN(SUM([Returns]))`","0 instead of null"],
+    ["Date","DATEPART","`DATEPART('month', [Order Date])`","3"],
+    ["Date","DATENAME","`DATENAME('weekday', [Order Date])`","'Monday'"],
+    ["Date","DATETRUNC","`DATETRUNC('month', [Order Date])`","First day of that month"],
+    ["Date","DATEADD","`DATEADD('day', 30, [Order Date])`","30 days later"],
+    ["Date","DATEDIFF","`DATEDIFF('day', [Order Date], [Ship Date])`","Days to ship"],
+    ["Date","TODAY / NOW","`TODAY()`","Current date"],
+    ["Date","MAKEDATE","`MAKEDATE(2025, 1, 31)`","A date value"],
+    ["Type","STR / INT / FLOAT / DATE","`STR([Postal Code])`","Text"],
+    ["Null","ISNULL / IFNULL","`IFNULL([Region], 'Unknown')`","Fallback value"]]}}
+  ],
+  q:[{q:"Days between order and shipping?",o:["DATEADD","DATEDIFF('day',[Order Date],[Ship Date])","DATEPART","DATETRUNC"],a:1,w:"DATEDIFF returns the number of date parts between two dates."}]},
+
+{ id:"d-logic", t:"Logic: IF, CASE, IIF", lvl:"Intermediate", min:8,
+  lead:"Logical functions turn numbers into categories and flags.",
+  b:[
+   {code:`IF [Profit] > 0 THEN "Profitable"
+ELSEIF [Profit] = 0 THEN "Break-even"
+ELSE "Loss"
+END
+
+CASE [Region]
+WHEN "East" THEN "Atlantic"
+WHEN "West" THEN "Pacific"
+ELSE "Inland"
+END
+
+IIF([Discount] > 0, "Discounted", "Full price")`},
+   {ul:["**IF** handles any condition, including ranges.","**CASE** compares one field to exact values; tidy for many options.","**IIF** is a compact two-way IF.","Combine conditions with AND, OR, NOT."]}
+  ],
+  q:[{q:"Which is best for mapping exact Region names to new labels?",o:["CASE","DATEDIFF","WINDOW_SUM","FIXED"],a:0,w:"CASE matches one field against exact values."}]},
+
+{ id:"d-rowagg", t:"Row-level vs aggregate calculations", lvl:"Advanced", min:8,
+  lead:"Some calcs run on each row and are then summed. Others aggregate first. Mixing them causes errors and wrong ratios.",
+  b:[
+   {tbl:{h:["Calc","Computed","Result for profit ratio"],r:[
+    ["`[Profit] / [Sales]`","Per row, then SUMmed in the view","Wrong: adds ratios together"],
+    ["`SUM([Profit]) / SUM([Sales])`","Aggregates first, then divides","Correct overall ratio"]]}},
+   {warn:"Error **Cannot mix aggregate and non-aggregate arguments** appears for e.g. `IF SUM([Sales]) > 1000 AND [Region] = 'West'`. Fix by wrapping the row-level part: `ATTR([Region])`, or move the condition to a filter."}
+  ],
+  q:[{q:"Correct overall profit ratio?",o:["SUM([Profit]/[Sales])","SUM([Profit]) / SUM([Sales])","AVG([Profit]/[Sales])","[Profit]/[Sales]"],a:1,w:"Aggregate first, then divide."}]},
+
+{ id:"d-tablecalc", t:"Table calculations", lvl:"Advanced", min:15,
+  lead:"Table calculations compute on the numbers already in the view: running totals, % of total, rank, difference from previous.",
+  b:[
+   {ul:["Right-click a measure pill → **Quick Table Calculation**: Running Total, Difference, Percent Difference, Percent of Total, Rank, Percentile, Moving Average, YTD Total, Compound Growth Rate, Year over Year Growth, YTD Growth.","A triangle (Δ) on the pill marks a table calculation.","**Compute Using** sets direction: Table (across), Table (down), Pane, Cell, or specific dimensions.","Advanced: Edit Table Calculation → choose addressing (the direction) and partitioning (where it restarts)."]},
+   {code:`RUNNING_SUM(SUM([Sales]))
+SUM([Sales]) / TOTAL(SUM([Sales]))          // percent of total
+RANK(SUM([Sales]))
+WINDOW_AVG(SUM([Sales]), -2, 0)            // 3-period moving average
+(ZN(SUM([Sales])) - LOOKUP(ZN(SUM([Sales])), -1))
+  / ABS(LOOKUP(ZN(SUM([Sales])), -1))      // % change vs previous`},
+   {tip:"Table calcs are computed late (after measure filters), so filtering can change their results. Use a table calc filter like `LOOKUP(MIN([Month]),0)` to hide rows without breaking the calc."}
+  ],
+  q:[{q:"Your running total restarts every year but you want it continuous. What do you change?",o:["Compute Using / addressing","Mark type","Default aggregation","Data type"],a:0,w:"Compute Using decides the direction and the restart point."}]},
+
+{ id:"d-lod", t:"Level of Detail (LOD) expressions", lvl:"Advanced", min:15,
+  lead:"LOD expressions calculate at a level you choose, regardless of what's in the view.",
+  b:[
+   {tbl:{h:["Type","Syntax","Means"],r:[
+    ["FIXED","`{FIXED [Customer ID] : MIN([Order Date])}`","Compute per Customer, ignoring view dimensions"],
+    ["INCLUDE","`{INCLUDE [Customer Name] : SUM([Sales])}`","Add a finer dimension, then re-aggregate"],
+    ["EXCLUDE","`{EXCLUDE [Sub-Category] : SUM([Sales])}`","Remove a dimension from the view's level"],
+    ["Table-scoped","`{MAX([Order Date])}`","One value for the whole table"]]}},
+   {code:`// First purchase date per customer (cohort analysis)
+{FIXED [Customer ID] : MIN([Order Date])}
+
+// Average sales per customer, shown by Region
+AVG({INCLUDE [Customer Name] : SUM([Sales])})
+
+// Each sub-category's share of its category
+SUM([Sales]) / SUM({EXCLUDE [Sub-Category] : SUM([Sales])})`},
+   {tip:"FIXED ignores normal dimension filters. Add the filter to context if FIXED should respect it."}
+  ],
+  q:[{q:"Find each customer's first order date regardless of the view. Use…",o:["{FIXED [Customer ID] : MIN([Order Date])}","RUNNING_MIN","A context filter","A group"],a:0,w:"FIXED computes at the Customer level independent of the view."}]},
+
+{ id:"d-params", t:"Parameters", lvl:"Advanced", min:12,
+  lead:"A parameter is a user-controlled value. On its own it does nothing; you plug it into a calc, filter or reference line.",
+  b:[
+   {h:"Top N with a parameter"},
+   {ol:["Right-click in the Data pane → **Create Parameter**.","Name: Top N. Type: Integer. Allowable values: Range 5–20, step 5. Current: 10.","Right-click the parameter → **Show Parameter**.","Customer Name → Filters → **Top** tab → By field: Top **[Top N]** by Sum of Sales."]},
+   {h:"Measure switcher"},
+   {code:`CASE [Choose Measure]
+WHEN "Sales"  THEN SUM([Sales])
+WHEN "Profit" THEN SUM([Profit])
+END`},
+   {ul:["Allowable values: All, List, Range.","**Dynamic parameters**: refresh the current value or list from a field when the workbook opens.","**Parameter actions** let a click on a mark set the value (dashboard topic)."]}
+  ],
+  q:[{q:"You created a parameter but nothing changes when you move it. Why?",o:["Parameters need to be used in a calc, filter or reference line","It needs an extract","It must be a measure","Parameters only work on dashboards"],a:0,w:"Parameters do nothing until something references them."}]}
+]},
+
+{ t: "Analytics & maps", topics: [
+{ id:"d-analytics", t:"The Analytics pane", lvl:"Intermediate", min:10,
+  lead:"Drag statistical helpers onto a view without writing any formulas.",
+  b:[
+   {tbl:{h:["Section","Items"],r:[
+    ["Summarize","Constant Line, Average Line, Median with Quartiles, Box Plot, Totals"],
+    ["Model","Average with 95% CI, Median with 95% CI, Trend Line, Forecast, Cluster"],
+    ["Custom","Reference Line, Reference Band, Distribution Band, Box Plot"]]}},
+   {p:"When you drop an item, choose its scope: **Table**, **Pane** or **Cell**."}
+  ],
+  q:[{q:"You want a dashed average line in each region pane separately. Scope?",o:["Table","Pane","Cell","Workbook"],a:1,w:"Pane draws one line per pane."}]},
+
+{ id:"d-trend", t:"Trend lines & forecasting", lvl:"Intermediate", min:10,
+  lead:"Quantify a pattern and project it forward.",
+  b:[
+   {ul:["Trend models: Linear, Logarithmic, Exponential, Power, Polynomial.","Right-click a trend line → **Describe Trend Model** to see R-squared and p-value.","Forecast needs a date and a measure; Tableau uses exponential smoothing.","Right-click → Forecast → Forecast Options: length, source data, ignore last period, seasonality.","Forecast → Describe Forecast shows quality metrics."]},
+   {warn:"Trend lines show correlation, not cause. A low p-value means the pattern is unlikely to be random, nothing more."}
+  ],
+  q:[{q:"Where do you see R-squared for a trend line?",o:["Describe Trend Model","Format pane","Data Source page","Show Me"],a:0,w:"Right-click the trend line → Describe Trend Model."}]},
+
+{ id:"d-maps", t:"Maps & geographic roles", lvl:"Intermediate", min:12,
+  lead:"Tableau geocodes place names for you once a field has a geographic role.",
+  b:[
+   {ol:["Right-click a field → **Geographic Role** → Country, State/Province, City, Postal Code, County, Airport, etc.","Double-click it. Tableau adds Latitude/Longitude (generated) and draws a symbol map.","Change mark type to **Map** (filled map) for regions shaded by a measure.","Unmatched places? Click the **unknown** indicator at bottom right → Edit Locations."]},
+   {ul:["**Map → Background Maps** and **Map → Map Layers** control style, streets and borders.","**Map → Map Options**: allow or block pan/zoom, show search.","Spatial files add a Geometry field; use MAKEPOINT, MAKELINE, BUFFER and DISTANCE for spatial calcs.","Dual-axis maps let you layer filled regions with circles."]}
+  ],
+  q:[{q:"Tableau shows '12 unknown' at the bottom right of a map. What do you do?",o:["Click it and Edit Locations","Delete the data","Create a set","Switch to extract"],a:0,w:"Edit Locations lets you match unrecognized names."}]}
+]},
+
+{ t: "Dashboards", topics: [
+{ id:"d-dash1", t:"Build your first dashboard", lvl:"Intermediate", min:12,
+  lead:"A dashboard combines several sheets into one screen that answers a business question.",
+  b:[
+   {ol:["Click the **New Dashboard** icon on the sheet tabs bar.","Set **Size**: Fixed (e.g. 1200 × 800), Automatic, Range, or presets like Desktop Browser.","Drag sheets from the left onto the canvas.","Choose **Tiled** (snap into a grid) or **Floating** (place freely) at the bottom of the Objects area.","Tick **Show dashboard title** and write a clear title.","Click a chart → funnel icon (**Use as Filter**) to make it filter the others."]},
+   {tip:"Fixed size is safest for consistent layout. Automatic can look stretched on large screens."}
+  ],
+  q:[{q:"Quickest way to make one chart filter the rest of the dashboard?",o:["Use as Filter (funnel icon)","Create a set","Blend sources","Add a caption"],a:0,w:"The funnel icon creates a filter action in one click."}]},
+
+{ id:"d-layout", t:"Layout containers & objects", lvl:"Intermediate", min:12,
+  lead:"Containers keep a dashboard tidy as things resize. Objects add text, images, buttons and more.",
+  b:[
+   {tbl:{h:["Object","Use"],r:[
+    ["Horizontal / Vertical container","Group items in a row or column; Distribute Contents Evenly"],
+    ["Text","Titles, notes, instructions"],
+    ["Image","Logos, icons (can link to a URL)"],
+    ["Web Page","Embed a URL"],
+    ["Blank","Spacing"],
+    ["Navigation","Button to jump to another sheet or dashboard"],
+    ["Download","Button to export as PDF, image, PowerPoint or crosstab"],
+    ["Extension","Add-ons from the Tableau Exchange"]]}},
+   {ul:["**Layout** tab: item hierarchy, size, padding, background, border.","Floating containers can get a **show/hide button** to build collapsible filter panels.","Name containers in the item hierarchy so you can find them later."]}
+  ],
+  q:[{q:"You want a collapsible panel of filters. Use…",o:["Floating container with a show/hide button","Blank object","Data source filter","Story point"],a:0,w:"Show/hide buttons work on floating containers."}]},
+
+{ id:"d-actions", t:"Dashboard actions", lvl:"Advanced", min:12,
+  lead:"Actions make dashboards interactive: click, hover or menu triggers that change other sheets.",
+  b:[
+   {tbl:{h:["Action","Does"],r:[
+    ["Filter","Click a mark to filter other sheets"],
+    ["Highlight","Highlight related marks, dim the rest"],
+    ["Go to URL","Open a web page, can pass field values"],
+    ["Go to Sheet","Navigate to another sheet or dashboard"],
+    ["Change Parameter","Set a parameter value from a click"],
+    ["Change Set Values","Add/remove clicked members to a set"]]}},
+   {ul:["Create: **Dashboard → Actions → Add Action**.","Run on: Hover, Select or Menu.","Clearing the selection will: Keep filtered values, Show all values, or Exclude all values."]}
+  ],
+  q:[{q:"Clicking a state should open a Wikipedia page about it. Which action?",o:["Filter","Highlight","Go to URL","Change Set Values"],a:2,w:"Go to URL can insert the State value into the link."}]},
+
+{ id:"d-device", t:"Device layouts", lvl:"Intermediate", min:6,
+  lead:"Design one dashboard, then adjust a version for tablets and phones.",
+  b:[
+   {ol:["Click **Device Preview** on the Dashboard pane.","Pick Desktop, Tablet or Phone, then **Add Layout**.","The phone layout stacks items vertically by default; remove or reorder items.","Choose **Fit width** so the phone layout scrolls vertically."]}
+  ],
+  q:[{q:"Where do you design a phone version of a dashboard?",o:["Device Preview → Add Phone Layout","Story pane","Data Source page","Format → Workbook"],a:0,w:"Device Preview creates device-specific layouts."}]},
+
+{ id:"d-dashdesign", t:"Dashboard design checklist", lvl:"Intermediate", min:8,
+  lead:"A dashboard is judged in five seconds. Design for that glance.",
+  b:[
+   {ul:["Put the main KPIs top-left; people scan in a Z pattern.","Three to five views is plenty. Split the rest into more dashboards.","One meaning per color across the dashboard (e.g., red always = loss).","Use labels instead of legends where you can.","Leave white space; align everything with containers.","Write titles that state the insight: 'West leads profit growth'.","Fewer marks and fewer 'Only Relevant Values' filters = faster loading."]}
+  ],
+  q:[{q:"Where should the most important KPI usually go?",o:["Top-left","Bottom-right","In a tooltip","On a second dashboard"],a:0,w:"Readers start scanning at the top-left."}]}
+]},
+
+{ t: "Stories", topics: [
+{ id:"d-story", t:"Build a story", lvl:"Intermediate", min:10,
+  lead:"A story is a sequence of sheets or dashboards that walks someone through an argument, point by point.",
+  b:[
+   {ol:["Click the **New Story** icon.","Set the story size (match your dashboards).","Drag a sheet or dashboard onto the canvas: this is story point 1.","Type the caption in the navigator box.","**Duplicate** or **Blank** to add points; change filters or highlights for each point.","After editing a point, click **Update** to save it (or **Save as New**).","Format → Story to style the navigator; Layout: caption boxes, numbers, dots or arrows only."]}
+  ],
+  q:[{q:"You changed a filter on a story point and want to keep it. Click…",o:["Update","Revert","Refresh","Present"],a:0,w:"Update saves the current state into that point."}]},
+
+{ id:"d-storycraft", t:"Storytelling that lands", lvl:"Intermediate", min:8,
+  lead:"Seven classic shapes for data stories. Pick one before you build.",
+  b:[
+   {tbl:{h:["Shape","Example"],r:[
+    ["Change over time","How sales grew since launch"],
+    ["Drill down","Country → state → city where the problem sits"],
+    ["Zoom out","One store, then how it compares to all stores"],
+    ["Contrast","Region A vs Region B"],
+    ["Intersections","When one line overtakes another"],
+    ["Factors","Break a total into its drivers"],
+    ["Outliers","The one product behaving differently"]]}},
+   {tip:"Use a simple arc: context → finding → so what → recommended action."}
+  ],
+  q:[{q:"'Our East region overtook West in Q3' is which story shape?",o:["Intersections","Outliers","Zoom out","Factors"],a:0,w:"An intersection is a crossover point."}]}
+]},
+
+{ t: "Reuse, update & share", topics: [
+{ id:"d-replace", t:"Recreate a dashboard on new data", lvl:"Intermediate", min:10,
+  lead:"Point an existing workbook at a new data source instead of rebuilding it.",
+  b:[
+   {ol:["Add the new data source: **Data → New Data Source**.","**Data → Replace Data Source**. Choose current and replacement.","Fields with matching names map automatically.","Any red ! fields: right-click → **Replace References** and pick the new field.","Close the old source once all sheets work."]},
+   {ul:["Same structure, new file location? Use **Data → [source] → Edit Data Source** and swap the file, or the connection's Edit link on the Data Source page.","Keep field names stable across files to make replacement painless."]}
+  ],
+  q:[{q:"After replacing a data source, a calc shows a red '!'. Fix?",o:["Replace References on the broken field","Delete the dashboard","Add to Context","Use Show Me"],a:0,w:"Replace References points old field references to the new field."}]},
+
+{ id:"d-append", t:"Append new data to an existing dashboard", lvl:"Intermediate", min:10,
+  lead:"Keep a dashboard current as new rows or new files arrive.",
+  b:[
+   {tbl:{h:["Situation","What to do"],r:[
+    ["Same file, more rows added","Live: Data → [source] → Refresh (F5). Extract: Extract → Refresh"],
+    ["A new monthly file arrives","Use a wildcard union (Sales_*.xlsx), then refresh"],
+    ["One extra file once","Physical layer → drag it under the existing table to union"],
+    ["Large extract, only new rows","Extract → Edit → Incremental refresh on an ID or date"],
+    ["Published to Server/Cloud","Schedule extract refreshes there"]]}},
+   {tip:"In Excel, format your range as a Table (Ctrl+T). New rows stay inside the same named table."}
+  ],
+  q:[{q:"Each month a new file Sales_YYYY_MM.xlsx lands in a folder. Best setup?",o:["Wildcard union + refresh","Rebuild monthly","Blend each month","Copy-paste data"],a:0,w:"A wildcard union picks up every matching file on refresh."}]},
+
+{ id:"d-recreate", t:"Copy, duplicate & version your work", lvl:"Intermediate", min:8,
+  lead:"Reuse what already works instead of starting from blank.",
+  b:[
+   {ul:["Right-click a sheet tab → **Duplicate** (copy) or **Duplicate as Crosstab** (table version).","Duplicating a dashboard does not duplicate its sheets; duplicate sheets separately if you'll change them.","Copy sheets between workbooks: select tabs → Ctrl+C → open the other workbook → Ctrl+V on the sheet tabs. Fields and data source come along.","**File → Revert to Saved** undoes everything since the last save.","Use dated file names (Sales_v3_2026-10-21.twbx) or **Revision History** on Server/Cloud.","Bookmark (.tbm) via Window → Bookmark → Create Bookmark to reuse a single sheet."]}
+  ],
+  q:[{q:"You duplicate a dashboard and edit a chart on the copy. The original changes too. Why?",o:["Both dashboards use the same worksheet","It's a bug","Extracts are shared","The copy is a story"],a:0,w:"Duplicating a dashboard reuses the same sheets. Duplicate the sheet and swap it in."}]},
+
+{ id:"d-export", t:"Export & publish", lvl:"Basic", min:8,
+  lead:"Get your work out of Tableau in the format people need.",
+  b:[
+   {tbl:{h:["Output","How"],r:[
+    ["Image","Worksheet/Dashboard → Export Image (or Copy Image)"],
+    ["PDF","File → Print to PDF"],
+    ["PowerPoint","File → Export As PowerPoint"],
+    ["Excel crosstab","Worksheet → Export → Crosstab to Excel"],
+    ["Data","Worksheet → Export → Data, or View Data → Download"],
+    ["Packaged workbook","File → Export Packaged Workbook / Save As .twbx"],
+    ["Tableau Server / Cloud","Server → Publish Workbook"],
+    ["Tableau Public","Server → Tableau Public → Save to Tableau Public"]]}}
+  ],
+  q:[{q:"Your manager wants each dashboard as a slide. Use…",o:["File → Export As PowerPoint","Export Data","Bookmark","Save as .tds"],a:0,w:"Export As PowerPoint creates a slide per sheet."}]},
+
+{ id:"d-perf", t:"Performance & workbook hygiene", lvl:"Advanced", min:8,
+  lead:"Fast workbooks get used. Slow ones get abandoned.",
+  b:[
+   {ul:["Use extracts and hide unused fields before extracting.","Fewer marks: aggregate, filter, avoid huge text tables.","Use context filters to shrink data before expensive filters.","Limit 'Only Relevant Values' filter cards; each one runs a query.","Prefer integer and boolean calcs over string comparisons.","**Help → Settings and Performance → Start Performance Recording** to find slow steps.","**Server → Run Optimizer** (Workbook Optimizer, 2022.1+) flags common issues."]}
+  ],
+  q:[{q:"Which tool shows exactly which query or step is slow?",o:["Performance Recording","Show Me","Story","Data Interpreter"],a:0,w:"Performance Recording creates a timeline of events."}]},
+
+{ id:"d-shortcuts", t:"Shortcuts that save hours", lvl:"Basic", min:5,
+  lead:"A handful of shortcuts and gestures you'll use every day. Mac users: Cmd instead of Ctrl.",
+  b:[
+   {tbl:{h:["Action","Shortcut"],r:[
+    ["Swap Rows and Columns","Ctrl+W"],
+    ["New worksheet","Ctrl+M"],
+    ["Connect to data","Ctrl+D"],
+    ["Presentation mode","F7"],
+    ["Undo / Redo","Ctrl+Z / Ctrl+Y"],
+    ["Refresh data source","F5"],
+    ["Copy a pill to another shelf","Ctrl-drag the pill"],
+    ["Choose how a field drops (e.g., exact date)","Right-drag the field"],
+    ["Add a field quickly","Double-click it in the Data pane"],
+    ["Remove a pill","Drag it off the shelf"],
+    ["Clear selection","Esc"]]}}
+  ],
+  q:[{q:"Right-dragging Order Date to Columns lets you…",o:["Choose exactly how it drops (date part, exact date…)","Delete it","Rename it","Hide it"],a:0,w:"Right-drag opens the Drop Field dialog."}]}
+]}
+],
+days: [
+ {t:"Good-to-know information", topics:["d-family","d-ui","d-ext","d-sources","d-vocab","d-types","d-dimmeas","d-disccont"], goals:["Name each Tableau product and its job","Tell .twb from .twbx and .hyper","Know which files Tableau can read","Classify fields as dimension/measure and discrete/continuous"], task:"Open Tableau and find My Tableau Repository. Connect to Sample – Superstore and write down, for 10 fields, the data type icon and whether it's a dimension or measure. Play the pill sorter until you score 12/12."},
+ {t:"Chart types: which chart for which data", topics:["d-chartmap","d-showme","d-agg","d-recipes"], goals:["Match a business question to a chart","Use Show Me hints","Pick the right aggregation"], task:"Write six questions about Superstore (e.g., 'Which region is most profitable?'). Choose a chart for each using the chart chooser, then build three of them."},
+ {t:"Upload a table & first representation", topics:["d-connect","d-livextract","d-clean","d-firstviz"], goals:["Connect to Excel and CSV","Use Data Interpreter","Clean, split and pivot columns","Build and save a labelled chart"], task:"Download any public CSV (e.g., your city's open data), connect, clean three columns, and build a sorted, labelled bar chart. Save as .twbx."},
+ {t:"A bit advanced: marks, sorting, filters", topics:["d-marks","d-sortfmt","d-hier","d-filters","d-showfilter"], goals:["Use every Marks card property","Sort and format like a pro","Build hierarchies","Add interactive filter cards"], task:"Build a Sub-Category profit chart with color by profit, a Category → Sub-Category hierarchy, a relative date filter and a Region filter card shown as a dropdown."},
+ {t:"Adding multiple columns & calculations", topics:["d-multimeasure","d-totals","d-calc","d-logic","d-funcs"], goals:["Show several measures together","Build a dual-axis combo","Write calculated fields","Use IF / CASE and date functions"], task:"Create a monthly Sales (bars) + Profit Ratio (line) dual-axis chart. Add a calc 'Days to Ship' and a CASE calc grouping Ship Mode into 'Fast' / 'Standard'."},
+ {t:"Merging multiple values & tables", topics:["d-rel","d-joins","d-union","d-blend","d-groups"], goals:["Relate, join and union tables","Know when to blend","Use groups, sets and bins"], task:"Relate Orders to Returns and People in Superstore. Then split Orders into three yearly CSVs and union them back with a wildcard. Create a Top 10 customers set."},
+ {t:"Dashboard preparation", topics:["d-dash1","d-layout","d-actions","d-device","d-dashdesign"], goals:["Lay out a dashboard with containers","Add filter, highlight and URL actions","Create a phone layout"], task:"Build a Sales Overview dashboard: KPI text, trend line, map, and bar chart. Clicking a state filters the rest. Add a phone layout."},
+ {t:"Story board creation", topics:["d-story","d-storycraft"], goals:["Build a multi-point story","Pick a story shape","Write insight-led captions"], task:"Turn yesterday's dashboard into a 5-point story using the 'Drill down' shape: national → region → state → product → recommendation."},
+ {t:"Append to or recreate an existing dashboard", topics:["d-replace","d-append","d-recreate"], goals:["Replace a data source","Append new data with unions and refresh","Duplicate and copy sheets between workbooks"], task:"Copy your Day 7 workbook. Point it at a new file with Replace Data Source, fix any red fields, then add a new month of data with a wildcard union."},
+ {t:"Calculations deep dive", topics:["d-rowagg","d-tablecalc","d-lod"], goals:["Avoid aggregate/row-level errors","Use table calcs with Compute Using","Write FIXED, INCLUDE and EXCLUDE"], task:"Build: running total of sales by month, % of total by Region, and a cohort chart of customers by first-order year using a FIXED LOD."},
+ {t:"Interactivity: parameters & filter logic", topics:["d-params","d-order","d-dsfilter"], goals:["Build Top N and measure-switcher parameters","Explain the order of operations","Use context and data source filters"], task:"Add a Top N parameter and a 'Choose Measure' switcher to your dashboard. Prove context filters by building Top 10 customers within a selected Region."},
+ {t:"Maps & analytics", topics:["d-maps","d-analytics","d-trend"], goals:["Build symbol and filled maps","Add reference lines and bands","Add trend lines and a forecast"], task:"Create a filled map of profit ratio by state, a scatter of Sales vs Profit with a trend line, and a 6-month sales forecast."},
+ {t:"Share, export & performance", topics:["d-export","d-perf","d-shortcuts"], goals:["Export to PDF, PowerPoint and Excel","Run a performance recording","Speed up building with shortcuts"], task:"Run Performance Recording on your dashboard, fix the slowest item, then export the dashboard to PDF and PowerPoint."},
+ {t:"Capstone project", topics:[], review:["d-disccont","d-joins","d-lod","d-actions","d-order"], goals:["Plan, build and present an end-to-end analysis","Prove every skill from Days 1–13"], task:"Pick a dataset you care about. Deliver: one cleaned data source, one dashboard with at least two actions and a parameter, one 5-point story, and a phone layout. Present it in 5 minutes using Presentation mode (F7)."}
+]
+},
+
+/* ------------------------------------------------------------ PUBLIC */
+public: {
+label: "Tableau Public",
+short: "Public",
+blurb: "The free platform. Build with the same skills as Desktop, publish to the web and grow a portfolio.",
+modules: [
+{ t:"Getting started", topics:[
+{ id:"p-what", t:"What Tableau Public is", lvl:"Basic", min:6,
+  lead:"Tableau Public is a free platform for building and sharing vizzes. Everything you save there can be seen by anyone.",
+  b:[
+   {ul:["Free authoring through **Tableau Desktop Public Edition** or in the browser.","Work is saved to your profile at public.tableau.com.","Anyone can view, and if you allow it, download your workbook.","A gallery of millions of vizzes plus **Viz of the Day** for inspiration."]},
+   {tbl:{h:["","Tableau Desktop","Tableau Public"],r:[
+    ["Cost","Paid","Free"],
+    ["Where work is saved","Your computer, Server, Cloud","Your Tableau Public profile (public web)"],
+    ["Privacy","Private","Public"],
+    ["Live database connections","Yes","No; data is extracted"],
+    ["Connectors","Dozens of databases and apps","Files and a few web sources"]]}}
+  ],
+  q:[{q:"Is Tableau Public a good home for confidential sales data?",o:["Yes","No, everything there is public","Only with an extract","Only on Fridays"],a:1,w:"Treat everything on Tableau Public as visible to the world."}]},
+
+{ id:"p-limits", t:"Limits & rules to know", lvl:"Basic", min:6,
+  lead:"A few platform limits shape how you prepare data for Public.",
+  b:[
+   {ul:["Data is always **extracted**; no live connections to databases.","Each data source is limited to **15 million rows**.","Each account has **10 GB** of storage.","Only certain connectors are available (files, Google Sheets, OData and a few others).","Sheets you build are saved to the web; check your edition's File menu for local save options."]},
+   {warn:"Limits change over time. Check the Tableau Public FAQ at public.tableau.com before planning a very large project."}
+  ],
+  q:[{q:"How does Tableau Public handle data from a file?",o:["Live connection","It's saved as an extract with the viz","It's discarded","It's emailed to you"],a:1,w:"Public stores an extract alongside your published workbook."}]},
+
+{ id:"p-privacy", t:"Privacy checklist before publishing", lvl:"Basic", min:5,
+  lead:"Publishing is public. Check your data before you click save.",
+  b:[
+   {ul:["Remove names, emails, phone numbers, addresses and IDs (personal data).","Aggregate where you can; publish totals, not individual rows.","Hide or delete unused fields so they don't ship in the extract.","Turn off downloads if the underlying rows are sensitive.","Hiding a viz from your profile does **not** make it private; the link still works."]}
+  ],
+  q:[{q:"You hid a viz from your profile. Is it private now?",o:["Yes","No, anyone with the link can still see it","Only for 24 hours","Only on mobile"],a:1,w:"Hidden vizzes are still public via their URL."}]},
+
+{ id:"p-setup", t:"Account & installation", lvl:"Basic", min:6,
+  lead:"Two ways in: the free desktop app, or straight in your browser.",
+  b:[
+   {ol:["Go to **public.tableau.com** and create a free profile.","Download **Tableau Desktop Public Edition** (Windows or Mac) from the site.","Install, open it and sign in with your Tableau Public account.","Or click **Create a Viz** on the website to author in the browser."]},
+   {tip:"Fill your profile now: photo, bio, location and links. Recruiters do look."}
+  ],
+  q:[{q:"Which is the free desktop app for Tableau Public?",o:["Tableau Desktop Public Edition","Tableau Reader","Tableau Prep Conductor","Tableau Server"],a:0,w:"Tableau Desktop Public Edition is the free authoring app."}]},
+
+{ id:"p-connectors", t:"What you can connect to", lvl:"Basic", min:5,
+  lead:"Public supports files and a small set of web sources.",
+  b:[
+   {tbl:{h:["Source","Notes"],r:[
+    ["Excel (.xls, .xlsx)","Most common"],
+    ["Text files (.csv, .txt, .tsv)","Check delimiter and header"],
+    ["JSON","Flatten the levels you need"],
+    ["PDF","Tables extracted from pages"],
+    ["Spatial files (.shp, .kml, .geojson…)","For custom maps"],
+    ["Statistical files (SAS, SPSS, R)","Labels preserved where possible"],
+    ["Google Sheets","Can stay in sync daily"],
+    ["OData","Open data feeds"]]}},
+   {tip:"Need a database? Export a CSV first, or clean it in Prep and output a CSV or .hyper."}
+  ],
+  q:[{q:"Which source can keep a Public viz updated automatically each day?",o:["Google Sheets","PDF","Statistical file","A .tde"],a:0,w:"Public can sync Google Sheets data daily."}]}
+]},
+{ t:"Build & publish", topics:[
+{ id:"p-build", t:"Building in Public = building in Desktop", lvl:"Basic", min:8,
+  lead:"The authoring interface is the same as Tableau Desktop. Everything you learn in the Desktop track applies.",
+  b:[
+   {p:"Shelves, Marks card, calculations, LOD, dashboards, actions and stories all work the same way. Start with the Desktop track's 'Good to know', 'Chart types' and 'Build views' modules."},
+   {ul:["Differences: fewer connectors, extracts only, saving goes to the web.","No publishing to Tableau Server or Cloud.","Use a fixed dashboard size (e.g. 1000 × 800) so it looks the same for every visitor."]},
+   {try:"Download a dataset from Tableau Public's **Sample Data** page and rebuild the Day 3 chart from the Desktop plan."}
+  ],
+  q:[{q:"Do LOD expressions work in Tableau Public?",o:["Yes, authoring features match Desktop","No","Only FIXED","Only in the browser"],a:0,w:"Calculation features are the same."}]},
+
+{ id:"p-publish", t:"Save & publish to the web", lvl:"Basic", min:8,
+  lead:"Saving is publishing. Here is what happens and which settings matter.",
+  b:[
+   {ol:["**File → Save to Tableau Public As…**","Sign in if asked.","Enter a title. Tableau extracts the data and uploads.","Your browser opens the published viz.","Click **Edit Details** for title, description and tags.","Open settings to toggle: show on profile, allow others to download/access the workbook, show sheets as tabs."]},
+   {tip:"Write a description with the data source and date. It helps people trust your work and helps search."}
+  ],
+  q:[{q:"What command publishes from the desktop app?",o:["File → Save to Tableau Public As","Server → Publish Workbook","Export → Crosstab","Data → Refresh"],a:0,w:"Saving to Tableau Public uploads the workbook."}]},
+
+{ id:"p-update", t:"Update a published viz", lvl:"Basic", min:6,
+  lead:"Improve or refresh a viz without breaking its link.",
+  b:[
+   {ol:["**File → Open from Tableau Public** and pick the viz.","Make changes (or refresh the data).","**File → Save to Tableau Public** with the same name to overwrite. The URL stays the same."]},
+   {ul:["Google Sheets sources: tick the option to keep data in sync and Public refreshes it daily.","Saving with a new name creates a separate viz with a new link."]}
+  ],
+  q:[{q:"You want the same link with new data. You…",o:["Save with the same name to overwrite","Save with a new name","Delete and re-upload","Email the file"],a:0,w:"Overwriting keeps the URL."}]},
+
+{ id:"p-embed", t:"Share & embed", lvl:"Basic", min:5,
+  lead:"Get your viz in front of people.",
+  b:[
+   {ul:["**Share** button on the viz: copy the link or the embed code.","Embed code goes into blogs, Notion, websites and portfolios.","Share to social networks directly.","Viewers can download images or PDFs if the toolbar allows it."]}
+  ],
+  q:[{q:"Putting a live, interactive viz into your blog uses…",o:["The embed code","A screenshot","A .twb file","An extract"],a:0,w:"Embed code keeps it interactive."}]},
+
+{ id:"p-webauth", t:"Web authoring in the browser", lvl:"Intermediate", min:6,
+  lead:"Create and edit vizzes on public.tableau.com without installing anything.",
+  b:[
+   {ul:["Click **Create a Viz** on your profile, upload a file and build.","Open your own viz and click **Edit** to change it in the browser.","Most building features are available; some advanced options remain desktop-only.","Good for quick fixes and when you're away from your own computer."]}
+  ],
+  q:[{q:"Can you edit your published viz without the desktop app?",o:["Yes, with web authoring","No","Only on mobile","Only with Prep"],a:0,w:"Edit opens web authoring."}]}
+]},
+{ t:"Grow your portfolio", topics:[
+{ id:"p-learn", t:"Learn from the gallery", lvl:"Basic", min:8,
+  lead:"The fastest way to improve is to take apart great work.",
+  b:[
+   {ol:["Browse **Discover** and **Viz of the Day**.","Open a viz you like and click download (if the author allows it).","Open the .twbx in your app and inspect: shelves, calcs, containers, actions.","Rebuild one technique in your own viz.","Credit the author when you borrow ideas."]}
+  ],
+  q:[{q:"Best way to learn how a complex viz was built?",o:["Download and inspect its workbook (if allowed)","Guess","Screenshot it","Copy the URL"],a:0,w:"Opening the workbook shows exactly how it works."}]},
+
+{ id:"p-profile", t:"Profile as a portfolio", lvl:"Basic", min:6,
+  lead:"Your Tableau Public profile is a CV for data work.",
+  b:[
+   {ul:["Feature your best three to five vizzes at the top.","Hide practice or broken vizzes from the profile.","Write a short bio with your focus (e.g., 'Sales analytics, Hyderabad').","Follow authors you admire and favorite vizzes to save them.","Keep a consistent visual style across vizzes."]}
+  ],
+  q:[{q:"Recruiters visit your profile. What should they see first?",o:["Your best featured vizzes","Every practice attempt","An empty bio","Default sheet names"],a:0,w:"Featured vizzes are the shop window."}]},
+
+{ id:"p-community", t:"Community projects", lvl:"Basic", min:6,
+  lead:"Weekly community challenges give you data, deadlines and feedback.",
+  b:[
+   {tbl:{h:["Project","What it is"],r:[
+    ["Makeover Monday","Remake a published chart with the dataset provided each week"],
+    ["Workout Wednesday","Recreate a technical challenge exactly"],
+    ["Iron Viz","Tableau's flagship visualization competition"],
+    ["#DataFamily","The community hashtag for sharing and help"]]}}
+  ],
+  q:[{q:"Which community project focuses on recreating technical challenges?",o:["Workout Wednesday","Makeover Monday","Iron Viz","Viz of the Day"],a:0,w:"Workout Wednesday is technique practice."}]}
+]}
+],
+days:[
+ {t:"What Public is, its limits & privacy", topics:["p-what","p-limits","p-privacy"], goals:["Explain Public vs Desktop","Know the data limits","Apply the privacy checklist"], task:"Browse public.tableau.com for 20 minutes. Save three vizzes you like and note one technique from each."},
+ {t:"Set up your account & tools", topics:["p-setup","p-connectors"], goals:["Create a profile","Install Desktop Public Edition","Know available connectors"], task:"Create your profile with bio and photo. Install the app, sign in, and connect to an Excel and a Google Sheet."},
+ {t:"Build your first viz", topics:["p-build"], goals:["Apply Desktop skills inside Public"], task:"Using a Sample Data dataset, build a 2-chart dashboard at a fixed size of 1000 × 800. (Use the Desktop track's Day 2–4 lessons.)"},
+ {t:"Publish & update", topics:["p-publish","p-update"], goals:["Publish with good details","Overwrite without breaking the link"], task:"Publish your dashboard with a title, description and source. Then change a color and overwrite it. Check the link still works."},
+ {t:"Share & web authoring", topics:["p-embed","p-webauth"], goals:["Share and embed","Edit in the browser"], task:"Embed your viz in a free blog or notes page. Then make an edit in the browser and save."},
+ {t:"Learn from others & build your profile", topics:["p-learn","p-profile"], goals:["Reverse-engineer a viz","Curate your profile"], task:"Download one Viz of the Day, list every calc and action it uses, and rebuild one technique. Feature your best viz."},
+ {t:"Community & capstone", topics:["p-community"], review:["p-privacy","p-publish","p-update"], goals:["Join a community project","Publish a portfolio piece"], task:"Do this week's Makeover Monday. Publish it, share it with #MakeoverMonday, and feature it on your profile."}
+]
+},
+
+/* ------------------------------------------------------------ PREP */
+prep: {
+label: "Tableau Prep Builder",
+short: "Prep",
+blurb: "The data-shaping tool. Build visual flows that clean, combine and reshape data before analysis.",
+modules: [
+{ t:"Prep foundations", topics:[
+{ id:"r-what", t:"What Prep Builder does", lvl:"Basic", min:6,
+  lead:"Prep Builder turns messy source data into analysis-ready tables using a visual, repeatable flow.",
+  b:[
+   {ul:["A **flow** is a series of steps from input to output.","Every change is recorded, so you can re-run the flow on new data.","Outputs feed Tableau Desktop, Server, Cloud or a database.","**Tableau Prep Conductor** (on Server or Cloud) schedules flows to run automatically."]},
+   {tbl:{h:["Do in Prep","Do in Desktop"],r:[
+    ["Fix spelling, nulls, types","Charts and dashboards"],
+    ["Join, union, pivot, aggregate once for everyone","Per-view calculations"],
+    ["Repeatable data pipeline","Exploration and storytelling"]]}}
+  ],
+  q:[{q:"What schedules Prep flows to run automatically on Server/Cloud?",o:["Prep Conductor","Show Me","Data Interpreter","Tableau Mobile"],a:0,w:"Prep Conductor runs published flows on a schedule."}]},
+
+{ id:"r-ui", t:"The interface: Flow, Profile, Data grid", lvl:"Basic", min:8,
+  lead:"Prep has three stacked areas. Top: the flow. Middle: the profile. Bottom: the rows.",
+  b:[
+   {tbl:{h:["Area","Shows","Used for"],r:[
+    ["Flow pane","Steps connected by lines","Adding, ordering and connecting steps"],
+    ["Profile pane","A card per field with value counts or histograms","Spotting problems and cleaning"],
+    ["Data grid","Row-level values","Checking the detail"],
+    ["Changes pane","List of every change in a step","Reviewing, editing, undoing changes"]]}},
+   {tip:"Click a value in one profile card; matching values highlight in every other card. It's the quickest way to find patterns."}
+  ],
+  q:[{q:"Where do you see each field's distribution as a mini chart?",o:["Profile pane","Flow pane","Changes pane","Output step"],a:0,w:"Profile cards summarize every field."}]},
+
+{ id:"r-files", t:"Prep files & outputs", lvl:"Basic", min:5,
+  lead:"Know what Prep saves and what it produces.",
+  b:[
+   {tbl:{h:["Extension / target","What it is"],r:[
+    ["`.tfl`","Flow file: steps and connections, no data"],
+    ["`.tflx`","Packaged flow: flow plus local input files"],
+    ["`.hyper`","Tableau extract output"],
+    ["`.csv`","Text output"],
+    ["Microsoft Excel","Output to a worksheet (newer versions)"],
+    ["Published data source","Output to Server or Cloud"],
+    ["Database table","Write directly to supported databases"]]}}
+  ],
+  q:[{q:"You need to send a flow and its local Excel inputs to a colleague. Save as…",o:[".tflx",".tfl",".twb",".tds"],a:0,w:"Packaged flows include local files."}]},
+
+{ id:"r-steps", t:"The step types", lvl:"Basic", min:8,
+  lead:"Click the + on any step to add the next one.",
+  b:[
+   {tbl:{h:["Step","Does"],r:[
+    ["Input","Connects to a file, database or extract"],
+    ["Clean","Rename, filter, split, group, calculate, change types"],
+    ["Aggregate","Group and summarize to a new level of detail"],
+    ["Pivot","Columns to rows or rows to columns"],
+    ["Join","Combine tables side by side on keys"],
+    ["Union","Stack tables with the same columns"],
+    ["New Rows","Fill gaps in sequential dates or numbers (newer versions)"],
+    ["Script","Run R or Python code"],
+    ["Prediction","Add Einstein Discovery predictions"],
+    ["Output","Write the result to a file, data source or database"]]}}
+  ],
+  q:[{q:"Which step changes one-row-per-order data into one-row-per-customer?",o:["Aggregate","Pivot","Union","Input"],a:0,w:"Aggregate groups rows to a new level of detail."}]}
+]},
+{ t:"Input & profiling", topics:[
+{ id:"r-input", t:"Connect & configure the Input step", lvl:"Basic", min:10,
+  lead:"The Input step decides what enters your flow. Configure it carefully.",
+  b:[
+   {ol:["Click **+** next to Connections, pick a source and a file.","Drag a table to the flow pane (or it's added automatically).","**Settings** tab: untick fields you don't need; set data types.","**Data Sample** tab: default sample, fixed number of rows, or **Use all data**; quick or random sampling.","**Multiple Files** tab: wildcard union to bring in many files at once."]},
+   {tip:"Untick unneeded fields at Input. Less data flows through every later step, so everything is faster."}
+  ],
+  q:[{q:"You want 12 monthly CSVs in one Input. Use…",o:["Multiple Files → Wildcard union","12 Input steps and 11 joins","An Aggregate step","Pivot"],a:0,w:"Wildcard union in the Input step stacks matching files."}]},
+
+{ id:"r-profile", t:"Read the profile like a detective", lvl:"Basic", min:8,
+  lead:"Before cleaning, look. The profile tells you what is broken.",
+  b:[
+   {ul:["**Nulls**: a null bar at the top or bottom of a card.","**Wrong type**: numbers stored as text (Abc icon), dates as strings.","**Misspellings**: 'Hyderabad', 'Hyderbad', 'HYDERABAD' in one list.","**Outliers**: lonely bars far from the rest of a histogram.","**Duplicates**: an ID field whose distinct count is less than the row count.","Toggle each card between summary (histogram) and detail (every value)."]}
+  ],
+  q:[{q:"A city card shows 'Mumbai', 'mumbai' and 'Mumbai ' as separate values. The cause?",o:["Inconsistent case and trailing spaces","Wrong data type","Too many rows","A join error"],a:0,w:"Case and whitespace differences create false duplicates."}]}
+]},
+{ t:"Cleaning", topics:[
+{ id:"r-clean", t:"Clean step essentials", lvl:"Basic", min:15,
+  lead:"Most cleaning happens in the Clean step, from each field's card menu.",
+  b:[
+   {tbl:{h:["Action","Where / how"],r:[
+    ["Rename field","Double-click the field name"],
+    ["Change type","Click the type icon"],
+    ["Filter","Card menu → Filter: Selected Values, Calculation, Range, Null Values"],
+    ["Keep only / Exclude","Select values → Keep Only or Exclude"],
+    ["Remove / duplicate field","Card menu → Remove or Duplicate"],
+    ["Split","Card menu → Split Values → Automatic or Custom"],
+    ["Clean text","Card menu → Clean → Make Uppercase / Lowercase / Titlecase, Remove Letters / Numbers / Punctuation, Trim Spaces, Remove Extra Spaces, Remove All Spaces"],
+    ["Group values","Card menu → Group Values → Manual Selection, Pronunciation, Common Characters, Spelling"],
+    ["Data role","Assign Email, URL or Geographic roles to flag invalid values"],
+    ["Edit a value","Double-click a value in the card"]]}},
+   {tip:"Order matters: trim and fix case first, then Group Values. Fewer variants remain to group."}
+  ],
+  q:[{q:"Merge 'Hyderabad', 'Hyderbad', 'Hydrabad' automatically. Use…",o:["Group Values → Spelling","Split","Pivot","Aggregate"],a:0,w:"Spelling grouping matches similar spellings."},
+     {q:"Remove leading and trailing spaces from a text field?",o:["Clean → Trim Spaces","Split","Rename","Filter → Null"],a:0,w:"Trim Spaces removes spaces at both ends."}]},
+
+{ id:"r-calc", t:"Calculations in Prep", lvl:"Intermediate", min:10,
+  lead:"Prep uses the same calculation language as Desktop, plus visual helpers for LODs and ranks.",
+  b:[
+   {ul:["Card menu or toolbar → **Create Calculated Field**.","Row-level functions work as in Desktop: IF, CASE, string and date functions.","**FIXED LOD** is supported: `{FIXED [Customer ID] : MIN([Order Date])}`.","Analytic functions: RANK, RANK_DENSE, RANK_MODIFIED, RANK_PERCENTILE, ROW_NUMBER.","Visual editors: Create Calculated Field → **Fixed LOD** or **Rank**."]},
+   {code:`// Flag each customer's first order
+IF [Order Date] = {FIXED [Customer ID] : MIN([Order Date])}
+THEN "First order" ELSE "Repeat" END`}
+  ],
+  q:[{q:"Which LOD type is supported in Prep?",o:["FIXED","INCLUDE","EXCLUDE","None"],a:0,w:"Prep supports FIXED LOD expressions."}]}
+]},
+{ t:"Combining data", topics:[
+{ id:"r-join", t:"Joins in Prep", lvl:"Intermediate", min:10,
+  lead:"Prep joins show you exactly what matched and what didn't. Use that.",
+  b:[
+   {ol:["Drag one step onto another and drop on **Join**.","Set the join clause (e.g., Order ID = Order ID).","Click the Venn diagram to choose the type."]},
+   {tbl:{h:["Type","Keeps"],r:[
+    ["Inner","Matches only"],["Left / Right","All of one side plus matches"],["Full outer","Everything"],
+    ["Left only / Right only","Only rows that did NOT match on that side"],["Not inner","All unmatched rows from both sides"]]}},
+   {ul:["The **Join Results** summary shows included and excluded row counts per side.","The **Join Clauses** list shows unmatched values; edit them right there to fix typos."]},
+   {tip:"Use **Left only** to list orders missing from a master table. It's a quick data-quality check."}
+  ],
+  q:[{q:"Find customers in Orders who are missing from the Customer master (Orders = left). Join type?",o:["Left only","Inner","Full outer","Union"],a:0,w:"Left only returns left rows without a match."}]},
+
+{ id:"r-union", t:"Unions in Prep", lvl:"Intermediate", min:8,
+  lead:"Stack tables and fix mismatched columns visually.",
+  b:[
+   {ul:["Drag a step onto another and drop on **Union**, or use the Input step's wildcard union.","The **Mismatched fields** list shows columns that don't line up.","Select two mismatched fields → **Merge Fields**.","A generated **Table Names** field tells you which input each row came from."]}
+  ],
+  q:[{q:"One file says 'Cust_ID', another 'Customer ID'. In a union you…",o:["Merge the mismatched fields","Join them","Pivot","Aggregate"],a:0,w:"Merge Fields combines them into one column."}]}
+]},
+{ t:"Shaping data", topics:[
+{ id:"r-pivot", t:"Pivot: columns ↔ rows", lvl:"Intermediate", min:8,
+  lead:"Reshape wide data to long, or long to wide.",
+  b:[
+   {ul:["**Columns to Rows**: drag Jan…Dec into Pivoted Fields → Month and Value columns.","**Rows to Columns**: choose the field whose values become new columns and how to aggregate.","Use **wildcard search** to pivot all columns matching a pattern (useful when new months appear)."]}
+  ],
+  q:[{q:"Data has a column per year (2022, 2023, 2024). For trend analysis you…",o:["Pivot Columns to Rows","Pivot Rows to Columns","Union","Join"],a:0,w:"Columns to Rows makes one Year column."}]},
+
+{ id:"r-agg", t:"The Aggregate step", lvl:"Intermediate", min:8,
+  lead:"Change the level of detail: from transactions to customers, days to months, lines to orders.",
+  b:[
+   {ol:["Add an **Aggregate** step.","Drag fields to **Grouped Fields** (the new level of detail).","Drag measures to **Aggregated Fields** and choose SUM, AVG, MIN, MAX, COUNT, COUNTD, MEDIAN, STDEV."]},
+   {tip:"Need an aggregate beside every row (e.g., customer total on each order)? Aggregate, then join back to the original on the grouped fields. Or use a FIXED LOD calc."}
+  ],
+  q:[{q:"In an Aggregate step, Customer ID goes in…",o:["Grouped Fields","Aggregated Fields","Filter","Output"],a:0,w:"Grouped fields set the new level of detail."}]},
+
+{ id:"r-newrows", t:"New Rows: fill gaps", lvl:"Advanced", min:6,
+  lead:"Daily data with missing days breaks running totals and line charts. New Rows fills the gaps.",
+  b:[
+   {ul:["Add a **New Rows** step (newer Prep versions).","Pick the sequence field (date or number) and the increment (e.g., 1 day).","Choose what new rows get: null, or copied values from the previous row.","Optionally partition by a field, so gaps are filled per store or product."]}
+  ],
+  q:[{q:"Store sales skip days with no sales. To show zero-sales days you…",o:["Add New Rows by 1 day, then replace nulls with 0","Aggregate","Pivot","Union"],a:0,w:"New Rows creates the missing dates."}]}
+]},
+{ t:"Output & automation", topics:[
+{ id:"r-output", t:"Output and run", lvl:"Basic", min:8,
+  lead:"A flow does nothing until you run its Output step.",
+  b:[
+   {ol:["Add an **Output** step at the end.","Choose: **File** (.hyper, .csv, Excel), **Published Data Source**, or **Database table**.","Set the write option: Create table, Append to table, or Replace data.","Click the **Run** (▶) button on the Output step or the toolbar."]},
+   {tip:"Append is how you build up history: each run adds new rows to the same extract."}
+  ],
+  q:[{q:"Each daily run should add rows to an existing extract, not overwrite it. Option?",o:["Append to table","Create table","Replace data","Nothing"],a:0,w:"Append keeps existing rows and adds new ones."}]},
+
+{ id:"r-schedule", t:"Schedule, refresh & maintain", lvl:"Advanced", min:8,
+  lead:"Turn a one-off cleanup into a pipeline that runs itself.",
+  b:[
+   {ul:["**Server → Publish Flow** to Tableau Server or Cloud.","Set schedules with **Prep Conductor**.","**Incremental refresh**: process only new rows, using a date or ID field.","**Parameters** in flows let one flow run for different files, regions or dates.","Document: add step descriptions, color-code steps, and name every step clearly."]}
+  ],
+  q:[{q:"Make a flow process only rows added since the last run?",o:["Incremental refresh","Full refresh","Union","Group Values"],a:0,w:"Incremental refresh uses a field to detect new rows."}]},
+
+{ id:"r-recipe", t:"An end-to-end recipe", lvl:"Intermediate", min:10,
+  lead:"A typical flow from raw files to a dashboard-ready extract.",
+  b:[
+   {ol:["**Input**: wildcard union of monthly sales CSVs; untick unused fields.","**Clean**: fix types, trim spaces, Group Values on City (Spelling), filter test orders.","**Join**: Left join to the Products table; check the Join Results for unmatched IDs.","**Clean**: calc Margin = [Profit] / [Sales].","**Aggregate** (branch): customer-level totals for a second output.","**Output**: Sales.hyper (Create table) and Customers.csv.","Open Sales.hyper in Desktop and build the dashboard."]}
+  ],
+  q:[{q:"Where should you remove unneeded fields for best performance?",o:["As early as possible, at Input","At Output","In Desktop","Never"],a:0,w:"Removing fields early speeds up every step."}]}
+]}
+],
+days:[
+ {t:"Prep basics, interface & files", topics:["r-what","r-ui","r-files"], goals:["Explain Prep's role","Name the panes","Know flow and output file types"], task:"Open Prep Builder and the bundled sample flow. Click every step and describe what it does in one line."},
+ {t:"Input, steps & profiling", topics:["r-steps","r-input","r-profile"], goals:["Configure an Input step","Read profile cards","Spot nulls, typos and outliers"], task:"Connect to a messy CSV (make one: inconsistent city names, blanks, text numbers). List every problem you see in the profile."},
+ {t:"Cleaning", topics:["r-clean"], goals:["Use every Clean menu option","Group misspellings","Filter and split"], task:"Fix every problem you found yesterday. Your Changes pane should show at least 10 changes."},
+ {t:"Combining: joins & unions", topics:["r-join","r-union"], goals:["Choose join types","Fix unmatched keys","Merge mismatched union fields"], task:"Union three monthly files with slightly different headers, then join to a lookup table. Use a Left only join to list missing IDs."},
+ {t:"Shaping: pivot, aggregate & new rows", topics:["r-pivot","r-agg","r-newrows"], goals:["Pivot wide data","Change level of detail","Fill missing dates"], task:"Pivot a wide month-per-column budget sheet, aggregate actuals to monthly, then join budget vs actual."},
+ {t:"Calculations in Prep", topics:["r-calc"], goals:["Write row-level calcs","Use FIXED LOD and RANK"], task:"Add First/Repeat order flags with a FIXED LOD and rank customers by sales within each region."},
+ {t:"Output, automation & capstone", topics:["r-output","r-schedule","r-recipe"], review:["r-clean","r-join","r-agg"], goals:["Output to .hyper and CSV","Plan scheduling","Run an end-to-end flow"], task:"Build the end-to-end recipe on your own data. Output a .hyper, open it in Desktop and build one dashboard on it."}
+]
+}
+
+}}
+};
+
+/* Lab data ------------------------------------------------------ */
+const CHART_GOALS = [
+ {g:"Compare categories", c:"Sorted bar chart", k:"bar", why:"Lengths are easy to compare; sorting shows the order instantly.", how:"Dimension on Rows, measure on Columns, sort descending.", avoid:"Pie charts with more than five slices."},
+ {g:"Show a trend over time", c:"Line chart", k:"line", why:"A line connects points through time so the eye follows the direction.", how:"Continuous date (green) on Columns, measure on Rows.", avoid:"Bars for long daily series."},
+ {g:"Show part of a whole", c:"Stacked bar or treemap", k:"stack", why:"Shows the total and its pieces together.", how:"Dimension on Columns, measure on Rows, second dimension on Color.", avoid:"3-D pies, or pies with many slices."},
+ {g:"Show a distribution", c:"Histogram", k:"hist", why:"Reveals the shape: spread, skew and outliers.", how:"Create bins from a measure; bins on Columns, COUNT on Rows.", avoid:"Reporting only the average."},
+ {g:"Relationship between two measures", c:"Scatter plot", k:"scatter", why:"Each dot is one item; patterns and clusters appear.", how:"One measure on Columns, one on Rows, a dimension on Detail. Add a trend line.", avoid:"Two lines on unrelated scales."},
+ {g:"Show location", c:"Map", k:"map", why:"Geography is the pattern.", how:"Assign a geographic role, double-click the field; Map mark for shaded regions.", avoid:"Filled maps of raw totals (big areas dominate)."},
+ {g:"Look up exact values", c:"Highlight table", k:"table", why:"People can read the number while color draws the eye.", how:"Dimensions on Rows and Columns, Square mark, measure on Color and Label.", avoid:"Charts when exact values matter most."},
+ {g:"Actual vs target", c:"Bullet chart", k:"bullet", why:"A bar for actual and a line for target in a tiny space.", how:"Measure on Columns, dimension on Rows, target as a reference line.", avoid:"Gauges and speedometers."},
+ {g:"Schedule or duration", c:"Gantt chart", k:"gantt", why:"Start and length of each task on a time axis.", how:"Date on Columns, task on Rows, Gantt Bar mark, duration on Size.", avoid:"Stacked bars."},
+ {g:"Spread across groups", c:"Box plot", k:"box", why:"Median, quartiles and outliers for each group side by side.", how:"Dimension on Columns, measure on Rows, Detail at a finer level, Analytics → Box Plot.", avoid:"One average bar per group."},
+ {g:"Two measures, different scales", c:"Dual-axis combo", k:"combo", why:"Bars for volume, a line for a rate, each on its own axis.", how:"Two measures on Rows → Dual Axis; set one to Bar and one to Line.", avoid:"Unlabelled axes that mislead."}
+];
+
+const PILL_FIELDS = [
+ {f:"Customer Name", a:"d", w:"Text that names who; you group by it, never add it."},
+ {f:"Sales", a:"m", w:"A number you sum or average."},
+ {f:"Order Date", a:"d", w:"Dates are dimensions; they slice data into time periods."},
+ {f:"Profit", a:"m", w:"A number to aggregate."},
+ {f:"Postal Code", a:"d", w:"Numeric, but it labels a place. Adding postal codes is meaningless."},
+ {f:"Quantity", a:"m", w:"Count of units; you add it up."},
+ {f:"Ship Mode", a:"d", w:"A category: First Class, Same Day…"},
+ {f:"Discount", a:"m", w:"A number; usually averaged."},
+ {f:"Row ID", a:"d", w:"An identifier. Tableau may guess measure; convert it to a dimension."},
+ {f:"Region", a:"d", w:"A category."},
+ {f:"Shipping Cost", a:"m", w:"A number you aggregate."},
+ {f:"Order ID", a:"d", w:"An identifier, often counted with COUNTD."}
+];
+
+</script>
+<script>
+(function(){
+const PLATFORM = "tableau";
+const PRODUCTS = COURSES[PLATFORM].products;
+const PKEYS = Object.keys(PRODUCTS);
+
+/* ---------- state ---------- */
+/* Every page load (and the Start over button) begins from this initial state. */
+const INITIAL = () => ({product:"desktop", mode:"general", cur:{}, day:{}, learned:{}, done:{}, quiz:{}, pills:{}, goal:0});
+let S = INITIAL();
+function save(){}
+
+/* ---------- index ---------- */
+const IDX = {}; const ORDER = {};
+PKEYS.forEach(pk => {
+  ORDER[pk] = [];
+  PRODUCTS[pk].modules.forEach((m, mi) => m.topics.forEach((t, ti) => {
+    IDX[t.id] = {t, m, mi, ti, pk, num:(mi+1) + "." + (ti+1)};
+    ORDER[pk].push(t.id);
+  }));
+});
+
+/* ---------- helpers ---------- */
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function fmt(s){
+  return esc(s)
+    .replace(/\[\[([^\]|]+)\|([dm])\]\]/g, (_, t, k) => '<span class="pill ' + k + '">' + t + '</span>')
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+const P = () => PRODUCTS[S.product];
+function learnedCount(pk){ return ORDER[pk].filter(id => S.learned[id]).length; }
+function dayDone(pk, n){ return !!S.done[pk + "-" + n]; }
+function firstOpenDay(pk){ const d = PRODUCTS[pk].days; for (let i=0;i<d.length;i++) if (!dayDone(pk,i+1)) return i+1; return d.length; }
+
+/* ---------- glyphs ---------- */
+function glyph(k){
+  let g = '<line x1="6" y1="54" x2="90" y2="54" class="ax"/>';
+  const bars = (hs, w, gap, x0, cls) => hs.map((h,i)=>'<rect x="'+(x0+i*gap)+'" y="'+(54-h)+'" width="'+w+'" height="'+h+'" rx="1" class="'+(cls||"g1")+'"/>').join("");
+  switch(k){
+    case "bar": g += bars([42,30,24,16,9],12,17,9); break;
+    case "line": g += '<polyline points="8,46 22,38 36,41 50,27 64,30 78,18 90,12" class="gl"/>'; break;
+    case "stack": [[22,14],[28,10],[16,18],[24,12]].forEach(([a,b],i)=>{const x=12+i*20; g+='<rect x="'+x+'" y="'+(54-a)+'" width="14" height="'+a+'" class="g1"/><rect x="'+x+'" y="'+(54-a-b)+'" width="14" height="'+b+'" class="g2"/>';}); break;
+    case "hist": g += bars([6,14,26,40,34,22,11,5],10,10.5,7); break;
+    case "scatter": [[14,46],[22,40],[30,42],[38,32],[46,34],[54,24],[62,27],[72,17],[82,13],[44,40],[66,20]].forEach(([x,y])=>g+='<circle cx="'+x+'" cy="'+y+'" r="3" class="g1"/>'); g+='<line x1="10" y1="48" x2="88" y2="10" class="gt"/>'; break;
+    case "map": g = '<path d="M12 22 Q22 8 42 12 T72 10 Q90 16 86 32 Q82 50 58 50 Q38 54 24 46 Q8 38 12 22Z" class="gb"/>'; [[30,22,6],[52,20,4],[66,34,8],[40,38,3],[74,20,3]].forEach(([x,y,r])=>g+='<circle cx="'+x+'" cy="'+y+'" r="'+r+'" class="g1" opacity=".85"/>'); break;
+    case "table": g=''; for(let r=0;r<4;r++) for(let c=0;c<5;c++){ const o=[.25,.5,.9,.4,.7,.3,.95,.55,.2,.8][(r*5+c)%10]; g+='<rect x="'+(8+c*16.5)+'" y="'+(6+r*12.5)+'" width="15" height="11" class="g1" opacity="'+o+'"/>'; } break;
+    case "bullet": g=''; [[70,52,60],[80,64,58],[60,30,50]].forEach(([bg,v,t],i)=>{const y=8+i*16; g+='<rect x="8" y="'+y+'" width="'+bg+'" height="12" class="gb"/><rect x="8" y="'+(y+3)+'" width="'+v+'" height="6" class="g1"/><rect x="'+(8+t)+'" y="'+(y-1)+'" width="2.5" height="14" class="g3"/>';}); break;
+    case "gantt": g=''; [[8,30],[30,22],[44,30],[60,26]].forEach(([x,w],i)=>g+='<rect x="'+x+'" y="'+(8+i*12)+'" width="'+w+'" height="8" rx="2" class="'+(i%2?"g2":"g1")+'"/>'); break;
+    case "box": [[20,18,34,12,44],[48,10,26,6,38],[76,22,38,14,48]].forEach(([x,q1,q3,lo,hi])=>{g+='<line x1="'+x+'" y1="'+lo+'" x2="'+x+'" y2="'+hi+'" class="ax" style="stroke:var(--muted)"/><rect x="'+(x-8)+'" y="'+q1+'" width="16" height="'+(q3-q1)+'" class="g1" opacity=".75"/><line x1="'+(x-8)+'" y1="'+((q1+q3)/2)+'" x2="'+(x+8)+'" y2="'+((q1+q3)/2)+'" style="stroke:var(--surface);stroke-width:2"/>';}); break;
+    case "combo": g += bars([30,36,26,40,34],11,16,10); g += '<polyline points="15,30 31,22 47,28 63,14 79,18" class="gl" style="stroke:var(--accent)"/>'; break;
+  }
+  return '<svg viewBox="0 0 96 60" class="glyph" aria-hidden="true">' + g + '</svg>';
+}
+
+/* ---------- labs ---------- */
+function chartLab(){
+  const gi = Math.min(S.goal||0, CHART_GOALS.length-1);
+  return '<div class="lab" data-lab="chart"><div class="lab-h"><span class="tag">Lab</span><h3>Chart chooser</h3></div>' +
+    '<p class="pace">Pick what you want to show. The lab recommends a chart and how to build it.</p>' +
+    '<div class="goals">' + CHART_GOALS.map((g,i)=>'<button type="button" class="goal'+(i===gi?' on':'')+'" data-goal="'+i+'">'+esc(g.g)+'</button>').join("") + '</div>' +
+    '<div class="cc-out">' + chartOut(gi) + '</div></div>';
+}
+function chartOut(i){
+  const g = CHART_GOALS[i];
+  return glyph(g.k) + '<div><span class="lbl">Recommended</span><h4>'+esc(g.c)+'</h4><p>'+esc(g.why)+'</p><p><span class="lbl">Build</span><br>'+esc(g.how)+'</p><p><span class="lbl">Avoid</span><br>'+esc(g.avoid)+'</p></div>';
+}
+function pillLab(){
+  let right = 0, answered = 0;
+  const rows = PILL_FIELDS.map((p,i)=>{
+    const pick = S.pills[i];
+    if (pick){ answered++; if (pick===p.a) right++; }
+    const res = pick ? '<span class="res">'+(pick===p.a?'<b class="ok">Correct.</b> ':'<b class="no">Not quite.</b> ')+esc(p.w)+'</span>' : '';
+    const pillName = pick ? '<span class="pill '+p.a+'">'+esc(p.f)+'</span>' : esc(p.f);
+    return '<div class="pf'+(pick?' done':'')+'"><span class="name">'+pillName+'</span>' +
+      (pick ? '' : '<button type="button" data-pill="'+i+'" data-pick="d">Dimension</button><button type="button" class="m" data-pill="'+i+'" data-pick="m">Measure</button>') + res + '</div>';
+  }).join("");
+  return '<div class="lab" data-lab="pills"><div class="lab-h"><span class="tag">Lab</span><h3>Pill sorter: dimension or measure?</h3><span class="score" style="margin-left:auto">'+right+' / '+PILL_FIELDS.length+' correct · '+answered+' answered</span></div>' +
+    '<div class="pills-grid">' + rows + '</div>' +
+    (answered ? '<button type="button" class="retry" data-pillreset="1">Start over</button>' : '') + '</div>';
+}
+
+/* ---------- blocks ---------- */
+function block(b){
+  if (b.p) return '<p>'+fmt(b.p)+'</p>';
+  if (b.h) return '<h3>'+fmt(b.h)+'</h3>';
+  if (b.ul) return '<ul>'+b.ul.map(x=>'<li>'+fmt(x)+'</li>').join("")+'</ul>';
+  if (b.ol) return '<ol>'+b.ol.map(x=>'<li>'+fmt(x)+'</li>').join("")+'</ol>';
+  if (b.tbl) return '<div class="tblwrap"><table><thead><tr>'+b.tbl.h.map(h=>'<th>'+fmt(h)+'</th>').join("")+'</tr></thead><tbody>'+b.tbl.r.map(r=>'<tr>'+r.map(c=>'<td>'+fmt(c)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>';
+  if (b.tip) return '<div class="note tip"><b class="lbl">Tip</b><span>'+fmt(b.tip)+'</span></div>';
+  if (b.warn) return '<div class="note warn"><b class="lbl">Watch out</b><span>'+fmt(b.warn)+'</span></div>';
+  if (b.try) return '<div class="note try"><b class="lbl">Try it</b><span>'+fmt(b.try)+'</span></div>';
+  if (b.code) return '<pre>'+esc(b.code)+'</pre>';
+  if (b.lab === "chart") return chartLab();
+  if (b.lab === "pills") return pillLab();
+  return "";
+}
+
+/* ---------- quiz ---------- */
+function quizCard(tid, i){
+  const qq = IDX[tid].t.q[i]; const key = tid + "#" + i; const pick = S.quiz[key];
+  const answered = pick !== undefined;
+  const opts = qq.o.map((o,oi)=>{
+    let cls = "opt";
+    if (answered){ if (oi===qq.a) cls+=" right"; else if (oi===pick) cls+=" wrong"; }
+    return '<button type="button" class="'+cls+'" data-q="'+key+'" data-o="'+oi+'"'+(answered?' disabled':'')+'>'+fmt(o)+'</button>';
+  }).join("");
+  const why = answered ? '<div class="why"><b>'+(pick===qq.a?'Correct. ':'The answer is: '+esc(qq.o[qq.a])+'. ')+'</b>'+fmt(qq.w)+'</div><button type="button" class="retry" data-qreset="'+key+'">Try again</button>' : '';
+  return '<div class="qcard" data-qcard="'+key+'"><p>'+fmt(qq.q)+'</p><div class="opts">'+opts+'</div>'+why+'</div>';
+}
+function quizSection(ids, title){
+  const cards = [];
+  ids.forEach(id => (IDX[id].t.q||[]).forEach((_,i)=>cards.push(quizCard(id,i))));
+  if (!cards.length) return "";
+  return '<section class="quiz"><h3>'+esc(title)+' <span class="score">'+cards.length+' question'+(cards.length>1?'s':'')+'</span></h3>'+cards.join("")+'</section>';
+}
+
+/* ---------- lesson ---------- */
+function lessonHTML(id, opt){
+  opt = opt || {};
+  const x = IDX[id], t = x.t, on = !!S.learned[id];
+  let h = '<div class="lesson-head">';
+  if (!opt.compact) h += '<span class="eyebrow">Module '+(x.mi+1)+' · '+esc(x.m.t)+'</span>';
+  h += '<h2>'+(opt.compact?'':'<span style="color:var(--muted);font-weight:500">'+x.num+'</span> ')+esc(t.t)+'</h2>';
+  h += '<div class="meta"><span class="tag '+t.lvl+'">'+t.lvl+'</span><span class="tag">~'+t.min+' min</span>' +
+       '<button type="button" class="learn-btn'+(on?' on':'')+'" data-learn="'+id+'" aria-pressed="'+on+'">'+(on?'✓ Learned':'Mark as learned')+'</button></div></div>';
+  h += '<p class="lead">'+fmt(t.lead)+'</p>';
+  h += '<div class="body">'+t.b.map(block).join("")+'</div>';
+  if (!opt.noQuiz) h += quizSection([id], "Quick check");
+  return h;
+}
+
+/* ---------- top bar ---------- */
+function renderShelves(){
+  $("#productPills").innerHTML = PKEYS.map(pk=>'<button type="button" class="spill'+(pk===S.product?' on':'')+'" data-product="'+pk+'" aria-pressed="'+(pk===S.product)+'">'+esc(PRODUCTS[pk].short)+'</button>').join("");
+  $("#modePills").innerHTML =
+    '<button type="button" class="spill m'+(S.mode==='general'?' on':'')+'" data-mode="general" aria-pressed="'+(S.mode==='general')+'">General</button>' +
+    '<button type="button" class="spill m'+(S.mode==='plan'?' on':'')+'" data-mode="plan" aria-pressed="'+(S.mode==='plan')+'">Time-bounded</button>';
+}
+function renderIntro(){
+  const p = P(), topics = ORDER[S.product].length, mins = ORDER[S.product].reduce((a,id)=>a+IDX[id].t.min,0);
+  $("#intro").innerHTML = '<h2>'+esc(p.label)+'</h2><span class="eyebrow">'+(S.mode==='general'?'General · explore in sequence':'Time-bounded · '+p.days.length+'-day plan')+'</span><p>'+esc(p.blurb)+'</p>' +
+    '<span class="stats">'+p.modules.length+' modules · '+topics+' topics · '+p.days.length+' days · ~'+Math.round(mins/60)+'h reading</span>';
+}
+
+/* ---------- global search ---------- */
+const plain = s => String(s).replace(/\[\[([^\]|]+)\|[dm]\]\]/g,"$1").replace(/\*\*|`/g,"");
+function blockText(b){
+  if (b.tbl) return b.tbl.h.concat(...b.tbl.r).join(" · ");
+  const v = b.p||b.h||b.tip||b.warn||b.try||b.code||(b.ul||b.ol||[]).join(" · ");
+  if (b.lab === "chart") return "chart chooser " + CHART_GOALS.map(g=>g.g+" "+g.c).join(" · ");
+  if (b.lab === "pills") return "pill sorter dimension measure " + PILL_FIELDS.map(p=>p.f).join(" · ");
+  return v || "";
+}
+const DAYOF = {};
+PKEYS.forEach(pk => PRODUCTS[pk].days.forEach((d,i) => d.topics.forEach(id => { DAYOF[id] = i+1; })));
+const SIDX = Object.keys(IDX).map(id => {
+  const x = IDX[id], t = x.t;
+  const body = plain([t.lead].concat(t.b.map(blockText), (t.q||[]).map(q=>q.q+" "+q.o.join(" ")+" "+q.w)).join(" · "));
+  return {id, pk:x.pk, title:t.t, tl:t.t.toLowerCase(), lead:plain(t.lead).toLowerCase(), body, bl:body.toLowerCase(), mod:x.m.t, num:x.num, lvl:t.lvl};
+});
+const SUGG = ["LOD","dual axis","union","join","parameter",".twbx","extract","Data Interpreter","dashboard actions","pivot","Group Values","publish"];
+const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+function terms(q){ return q.toLowerCase().split(/\s+/).filter(Boolean); }
+function markup(text, ts){
+  let h = esc(text);
+  if (!ts.length) return h;
+  const re = new RegExp("(" + ts.map(t=>reEsc(esc(t))).sort((a,b)=>b.length-a.length).join("|") + ")", "gi");
+  return h.replace(re, "<mark>$1</mark>");
+}
+function searchTopics(q){
+  const ts = terms(q); if (!ts.length) return [];
+  const ql = q.trim().toLowerCase(), out = [];
+  SIDX.forEach(r => {
+    const all = r.tl + " " + r.bl + " " + r.mod.toLowerCase();
+    if (!ts.every(t => all.includes(t))) return;
+    let sc = 0;
+    if (r.tl.includes(ql)) sc += 100;
+    if (r.tl.startsWith(ql)) sc += 30;
+    ts.forEach(t => { if (r.tl.includes(t)) sc += 25; if (r.lead.includes(t)) sc += 6; if (r.mod.toLowerCase().includes(t)) sc += 4; sc += Math.min(10, r.bl.split(t).length - 1); });
+    if (r.pk === S.product) sc += 3;
+    out.push({r, sc});
+  });
+  return out.sort((a,b)=>b.sc-a.sc).slice(0, 40).map(o=>o.r);
+}
+function snippet(r, ts){
+  let i = -1;
+  for (const t of ts){ const k = r.bl.indexOf(t); if (k >= 0 && (i < 0 || k < i)) i = k; }
+  if (i < 0) return esc(r.body.slice(0, 120)) + (r.body.length>120?"…":"");
+  const a = Math.max(0, i - 50), b = Math.min(r.body.length, i + 90);
+  return (a>0?"…":"") + markup(r.body.slice(a,b), ts) + (b<r.body.length?"…":"");
+}
+let sActive = 0, sHits = [];
+function renderResults(){
+  const box = $("#sres"), inp = $("#gsearch"), q = inp.value, ts = terms(q);
+  $("#sclear").hidden = !q; $("#skbd").hidden = !!q;
+  if (!ts.length){
+    box.innerHTML = '<div class="sres-head"><span>Search across <b>Desktop, Public and Prep</b></span><span>↑↓ to move · Enter to open</span></div><div class="sgroup">Popular searches</div><div class="ssugg">' + SUGG.map(x=>'<button type="button" data-sq="'+esc(x)+'">'+esc(x)+'</button>').join("") + '</div>';
+    sHits = []; return;
+  }
+  sHits = searchTopics(q); if (sActive >= sHits.length) sActive = 0;
+  if (!sHits.length){ box.innerHTML = '<div class="sempty">No topics match “'+esc(q)+'”. Try a shorter word, such as “join” or “filter”.</div>'; return; }
+  let html = '<div class="sres-head"><span><b>'+sHits.length+'</b> topic'+(sHits.length>1?'s':'')+' found</span><span>Opens in '+(S.mode==='plan'?'its day plan':'General mode')+'</span></div>', last = "", n = 0;
+  const order = [S.product].concat(PKEYS.filter(p=>p!==S.product));
+  order.forEach(pk => {
+    const grp = sHits.filter(r=>r.pk===pk); if (!grp.length) return;
+    html += '<div class="sgroup">'+esc(PRODUCTS[pk].label)+' · '+grp.length+'</div>';
+    grp.forEach(r => {
+      const i = sHits.indexOf(r);
+      html += '<button type="button" role="option" class="shit'+(i===sActive?' active':'')+'" data-hit="'+r.id+'" data-i="'+i+'" aria-selected="'+(i===sActive)+'">' +
+        '<span class="st">'+markup(r.title, ts)+'</span>' +
+        '<span class="sm"><span class="pchip">'+esc(PRODUCTS[r.pk].short)+'</span><span>'+r.num+' · '+esc(r.mod)+(DAYOF[r.id]?' · Day '+DAYOF[r.id]:'')+' · '+r.lvl+'</span></span>' +
+        '<span class="ss">'+snippet(r, ts)+'</span></button>';
+    });
+  });
+  // keep visual order and index order in sync
+  const vis = []; order.forEach(pk => sHits.filter(r=>r.pk===pk).forEach(r=>vis.push(r))); sHits = vis;
+  box.innerHTML = html.replace(/data-i="(\d+)"/g, ()=>"");
+  [...box.querySelectorAll(".shit")].forEach((b,i)=>{ b.dataset.i = i; b.classList.toggle("active", i===sActive); b.setAttribute("aria-selected", i===sActive); });
+}
+function openSearch(){ renderResults(); $("#sres").hidden = false; $("#gsearch").setAttribute("aria-expanded","true"); }
+function closeSearch(){ $("#sres").hidden = true; $("#gsearch").setAttribute("aria-expanded","false"); }
+function moveActive(d){
+  const items = [...document.querySelectorAll("#sres .shit")]; if (!items.length) return;
+  sActive = (sActive + d + items.length) % items.length;
+  items.forEach((b,i)=>{ b.classList.toggle("active", i===sActive); b.setAttribute("aria-selected", i===sActive); });
+  items[sActive].scrollIntoView({block:"nearest"});
+}
+function highlightIn(el, ts){
+  if (!el || !ts.length) return null;
+  const re = new RegExp("(" + ts.map(reEsc).sort((a,b)=>b.length-a.length).join("|") + ")", "gi");
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: n => (n.parentElement.closest("button,mark,script,style,.quiz") ? NodeFilter.FILTER_REJECT : (re.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP)) });
+  const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+  let first = null;
+  nodes.forEach(n => {
+    re.lastIndex = 0;
+    const frag = document.createDocumentFragment(); let last = 0, m; const v = n.nodeValue;
+    const r2 = new RegExp(re.source, "gi");
+    while ((m = r2.exec(v))){ frag.appendChild(document.createTextNode(v.slice(last, m.index))); const mk = document.createElement("mark"); mk.textContent = m[0]; frag.appendChild(mk); if (!first) first = mk; last = m.index + m[0].length; }
+    frag.appendChild(document.createTextNode(v.slice(last)));
+    n.parentNode.replaceChild(frag, n);
+  });
+  return first;
+}
+function goToHit(id){
+  const x = IDX[id], q = $("#gsearch").value, ts = terms(q);
+  S.product = x.pk; filterText = "";
+  let target;
+  if (S.mode === "plan" && DAYOF[id]){
+    S.day[x.pk] = DAYOF[id]; render();
+    const acc = document.querySelector('details.acc[data-acc="'+id+'"]');
+    if (acc){ acc.open = true; target = acc.querySelector(".acc-body"); }
+  } else {
+    if (S.mode === "plan") S.mode = "general";
+    S.cur[x.pk] = id; OPENMODS.add(x.pk+":"+x.mi); render(); target = $("#lesson");
+  }
+  closeSearch(); $("#gsearch").blur();
+  const first = highlightIn(target, ts);
+  const scrollEl = first || target;
+  if (scrollEl){
+    if (first) first.classList.add("hit");
+    const y = scrollEl.getBoundingClientRect().top + window.scrollY - (parseInt(getComputedStyle(document.documentElement).getPropertyValue("--mh"))||120) - 24;
+    window.scrollTo({top: Math.max(0, first ? y : y), behavior:"smooth"});
+  }
+}
+
+/* ---------- general mode ---------- */
+let filterText = "";
+let OPENMODS = new Set();
+function tocHTML(){
+  const pk = S.product, cur = S.cur[pk] || ORDER[pk][0], f = filterText.trim().toLowerCase();
+  let any = false;
+  const html = P().modules.map((m,mi)=>{
+    const items = m.topics.filter(t => !f || (t.t + " " + t.lead + " " + JSON.stringify(t.b)).toLowerCase().includes(f));
+    if (!items.length) return "";
+    any = true;
+    const done = m.topics.filter(t=>S.learned[t.id]).length;
+    const open = f || OPENMODS.has(pk+":"+mi);
+    return '<details class="mod" data-mod="'+pk+':'+mi+'"'+(open?' open':'')+'><summary><span class="caret">▶</span>'+(mi+1)+'. '+esc(m.t)+'<span class="cnt">'+done+'/'+m.topics.length+'</span></summary>' +
+      items.map(t=>'<button type="button" class="titem'+(t.id===cur?' cur':'')+'" data-topic="'+t.id+'"><span class="num">'+IDX[t.id].num+'</span><span>'+esc(t.t)+'</span>'+(S.learned[t.id]?'<span class="ok">✓</span>':'')+'</button>').join("") + '</details>';
+  }).join("");
+  return any ? html : '<div class="toc-empty">No topics match “'+esc(filterText)+'”.</div>';
+}
+function renderGeneral(){
+  const pk = S.product;
+  if (!S.cur[pk] || !IDX[S.cur[pk]]) S.cur[pk] = ORDER[pk][0];
+  const id = S.cur[pk], i = ORDER[pk].indexOf(id);
+  const prev = ORDER[pk][i-1], next = ORDER[pk][i+1];
+  const nav = '<div class="navrow">' +
+    (prev ? '<button type="button" class="navbtn" data-topic="'+prev+'"><small>← Previous</small>'+esc(IDX[prev].t.t)+'</button>' : '') +
+    (next ? '<button type="button" class="navbtn next" data-topic="'+next+'"><small>Next →</small>'+esc(IDX[next].t.t)+'</button>' : '<span class="pace">You reached the end of this track. Try Time-bounded mode for daily practice tasks.</span>') + '</div>';
+  $("#view").innerHTML = '<div class="general">' +
+    '<aside class="pane" id="pane"><button type="button" class="pane-toggle" id="paneToggle" aria-expanded="false">Topics · '+IDX[id].num+' '+esc(IDX[id].t.t)+'<span>▾</span></button>' +
+    '<div class="pane-head"><label for="search">Search topics</label><input class="search" id="search" type="search" placeholder="e.g. LOD, union, .twbx" value="'+esc(filterText)+'"></div>' +
+    '<div class="toc" id="toc">'+tocHTML()+'</div></aside>' +
+    '<article class="lesson" id="lesson">'+lessonHTML(id)+nav+'</article></div>';
+}
+
+/* ---------- plan mode ---------- */
+function renderPlan(){
+  const pk = S.product, days = P().days;
+  let n = S.day[pk] || firstOpenDay(pk); if (n > days.length) n = days.length; S.day[pk] = n;
+  const d = days[n-1], current = firstOpenDay(pk);
+  const shelf = '<div class="dayshelf" role="tablist" aria-label="Days"><span class="shelf-label"><svg viewBox="0 0 14 14"><rect x="1" y="2" width="12" height="11" rx="1" fill="none" stroke="var(--muted)" stroke-width="1.5"/><rect x="1" y="2" width="12" height="3" fill="var(--muted)"/></svg>Days</span><div class="days">' +
+    days.map((_,i)=>{const k=i+1; return '<button type="button" role="tab" aria-selected="'+(k===n)+'" class="dpill'+(dayDone(pk,k)?' done':'')+(k===n?' on':'')+(k===current&&!dayDone(pk,k)?' cur':'')+'" data-day="'+k+'">'+(dayDone(pk,k)?'✓ ':'')+'Day '+k+'</button>';}).join("") + '</div></div>';
+  const mins = d.topics.reduce((a,id)=>a+IDX[id].t.min,0) + 30;
+  const lessons = d.topics.map((id,i)=>'<details class="acc" data-acc="'+id+'"><summary><span class="caret">▶</span><span class="num">'+(i+1)+'</span>'+esc(IDX[id].t.t)+'<span class="ok">'+(S.learned[id]?'✓ learned':'')+'</span></summary><div class="acc-body">'+lessonHTML(id,{compact:true,noQuiz:true})+'</div></details>').join("");
+  const reviewIds = d.topics.concat(d.review||[]);
+  const doneNow = dayDone(pk,n);
+  const main = '<div class="daymain">' +
+    '<div class="dayhead"><span class="eyebrow">Day '+n+' of '+days.length+(n===current&&!doneNow?' · your current day':'')+'</span><h2>'+esc(d.t)+'</h2>' +
+    '<div class="meta"><span class="tag">'+(d.topics.length?d.topics.length+' lesson'+(d.topics.length>1?'s':''):'Project day')+'</span><span class="tag">~'+mins+' min incl. task</span>'+(doneNow?'<span class="tag Basic" style="background:var(--mea-bg);color:var(--mea)">Completed</span>':'')+'</div></div>' +
+    (lessons ? '<div class="sectionlbl"><h3>Today\'s lessons</h3><span class="pace">Open each one, then mark it learned.</span></div>' + lessons : '') +
+    '<div class="task"><b class="lbl">Hands-on task</b><p>'+fmt(d.task)+'</p></div>' +
+    quizSection(reviewIds, d.review && !d.topics.length ? "Final checkpoint" : "Day "+n+" checkpoint") +
+    '<div class="daybtns"><button type="button" class="btn'+(doneNow?' done':'')+'" data-doneday="'+n+'">'+(doneNow?'✓ Day '+n+' complete':'Mark Day '+n+' complete')+'</button>' +
+    (n < days.length ? '<button type="button" class="btn ghost" data-day="'+(n+1)+'">Go to Day '+(n+1)+' →</button>' : '') + '</div></div>';
+  const side = '<aside class="side">' +
+    '<div class="card"><h3>Goals for today</h3><ul class="goals-list">'+d.goals.map(g=>'<li>'+fmt(g)+'</li>').join("")+'</ul></div>' +
+    '<div class="card"><h3>The whole plan</h3><p class="pace">About 60–90 minutes a day. Days are open in any order; your current day is outlined.</p><ul class="timeline">' +
+    days.map((x,i)=>'<li><button type="button" class="'+(i+1===n?'on':'')+'" data-day="'+(i+1)+'"><span class="dn">Day '+(i+1)+'</span><span>'+esc(x.t)+'</span>'+(dayDone(pk,i+1)?'<span class="ok">✓</span>':'')+'</button></li>').join("") + '</ul></div></aside>';
+  $("#view").innerHTML = shelf + '<div class="dayview" style="margin-top:14px">' + main + side + '</div>';
+}
+
+/* ---------- render ---------- */
+function render(keepOpen){
+  const open = keepOpen ? [...document.querySelectorAll("details.acc[open]")].map(e=>e.dataset.acc) : [];
+  const paneOpen = keepOpen && $("#pane") && $("#pane").classList.contains("open");
+  renderShelves(); renderIntro();
+  if (S.mode === "general") renderGeneral(); else renderPlan();
+  open.forEach(id => { const el = document.querySelector('details.acc[data-acc="'+id+'"]'); if (el) el.open = true; });
+  if (paneOpen && $("#pane")) { $("#pane").classList.add("open"); $("#paneToggle").setAttribute("aria-expanded","true"); }
+  setMH();
+}
+function setMH(){ const m = $("#masthead"); if (m) document.documentElement.style.setProperty("--mh", m.offsetHeight + "px"); }
+window.addEventListener("resize", setMH);
+
+/* ---------- theme ---------- */
+const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+function isDark(){ const a = document.documentElement.getAttribute("data-theme"); if (a) return a === "dark"; return !!(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); }
+function paintThemeBtn(){ const b = $("#themeBtn"), d = isDark(); b.innerHTML = d ? SUN : MOON; b.title = d ? "Switch to light theme" : "Switch to dark theme"; b.setAttribute("aria-label", b.title); }
+
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  const t = e.target.closest("button"); if (!t) return;
+  const ds = t.dataset;
+  if (ds.product){ S.product = ds.product; filterText = ""; render(); return; }
+  if (ds.mode){ S.mode = ds.mode; render(); return; }
+  if (ds.topic){ S.cur[S.product] = ds.topic; render(true); const l=$("#lesson"); if (l && window.innerWidth<900) l.scrollIntoView({behavior:"smooth",block:"start"}); else window.scrollTo({top:0,behavior:"smooth"}); return; }
+  if (ds.learn){ if (S.learned[ds.learn]) delete S.learned[ds.learn]; else S.learned[ds.learn] = 1; render(true); return; }
+  if (ds.day){ S.day[S.product] = +ds.day; render(); window.scrollTo({top:0,behavior:"smooth"}); return; }
+  if (ds.doneday){ const k = S.product+"-"+ds.doneday; if (S.done[k]) delete S.done[k]; else { S.done[k]=1; const d=P().days[+ds.doneday-1]; d.topics.forEach(id=>S.learned[id]=1); } render(true); return; }
+  if (ds.q !== undefined && ds.o !== undefined){ S.quiz[ds.q] = +ds.o; save(); const [tid,qi] = ds.q.split("#"); const card = t.closest(".qcard"); card.outerHTML = quizCard(tid,+qi); return; }
+  if (ds.qreset){ delete S.quiz[ds.qreset]; save(); const [tid,qi] = ds.qreset.split("#"); t.closest(".qcard").outerHTML = quizCard(tid,+qi); return; }
+  if (ds.goal !== undefined){ S.goal = +ds.goal; save(); const lab = t.closest(".lab"); lab.querySelectorAll(".goal").forEach((b,i)=>b.classList.toggle("on", i===S.goal)); lab.querySelector(".cc-out").innerHTML = chartOut(S.goal); return; }
+  if (ds.pill !== undefined){ S.pills[ds.pill] = ds.pick; save(); t.closest(".lab").outerHTML = pillLab(); return; }
+  if (ds.pillreset){ S.pills = {}; save(); t.closest(".lab").outerHTML = pillLab(); return; }
+  if (t.id === "paneToggle"){ const p = $("#pane"); p.classList.toggle("open"); t.setAttribute("aria-expanded", p.classList.contains("open")); return; }
+  if (t.id === "themeBtn"){ document.documentElement.setAttribute("data-theme", isDark() ? "light" : "dark"); paintThemeBtn(); return; }
+  if (ds.hit){ goToHit(ds.hit); return; }
+  if (ds.sq){ const i = $("#gsearch"); i.value = ds.sq; sActive = 0; openSearch(); i.focus(); return; }
+  if (t.id === "sclear"){ const i = $("#gsearch"); i.value = ""; sActive = 0; openSearch(); i.focus(); return; }
+  if (t.id === "restartBtn"){ S = INITIAL(); filterText = ""; OPENMODS = new Set(); $("#gsearch").value = ""; closeSearch(); $("#sclear").hidden = true; $("#skbd").hidden = false; render(); window.scrollTo({top:0,behavior:"smooth"}); return; }
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "search"){ filterText = e.target.value; $("#toc").innerHTML = tocHTML(); }
+  if (e.target.id === "gsearch"){ sActive = 0; openSearch(); }
+});
+document.addEventListener("toggle", e => {
+  const d = e.target; if (!d.dataset || !d.dataset.mod || filterText.trim()) return;
+  if (d.open) OPENMODS.add(d.dataset.mod); else OPENMODS.delete(d.dataset.mod);
+}, true);
+document.addEventListener("focusin", e => { if (e.target.id === "gsearch") openSearch(); });
+document.addEventListener("pointerdown", e => { if (!e.target.closest("#hsearch")) closeSearch(); });
+document.addEventListener("keydown", e => {
+  const inSearch = e.target.id === "gsearch";
+  if (inSearch){
+    if (e.key === "ArrowDown"){ e.preventDefault(); moveActive(1); }
+    else if (e.key === "ArrowUp"){ e.preventDefault(); moveActive(-1); }
+    else if (e.key === "Enter"){ e.preventDefault(); const b = document.querySelectorAll("#sres .shit")[sActive]; if (b) goToHit(b.dataset.hit); }
+    else if (e.key === "Escape"){ closeSearch(); e.target.blur(); }
+    return;
+  }
+  const typing = /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable;
+  if (!typing && (e.key === "/" || ((e.ctrlKey||e.metaKey) && e.key.toLowerCase() === "k"))){ e.preventDefault(); $("#gsearch").focus(); $("#gsearch").select(); }
+});
+
+paintThemeBtn();
+render();
+})();
+</script>
+
+</body></html>
